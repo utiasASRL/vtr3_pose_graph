@@ -9,11 +9,6 @@ src/simple_graph/__pycache__
 src/vtr_utils/__pycache__
 *.egg-info
 src/vtr3_pyposegraph.egg-info
-src/simple_graph/__pycache__/edge.cpython-310.pyc
-src/simple_graph/__pycache__/graph_utils.cpython-310.pyc
-src/simple_graph/__pycache__/graph_iterators.cpython-310.pyc
-.idea/vtr3_python.iml
-.idea/misc.xml
-src/vtr3_pyposegraph.egg-info/PKG-INFO
-src/vtr3_pyposegraph.egg-info/top_level.txt
+src/vtr3_pyposegraph.egg-info
+src/vtr3_pyposegraph.egg-info
 *.db3
