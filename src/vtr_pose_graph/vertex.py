@@ -44,11 +44,10 @@ class Vertex:
         if not self.cache:
             raise IndexError("Vertex does not have access to any data")
         db = self.cache.get_data(message_name)
+        raise NotImplementedError("Writing to pose graphs is not yet supported.")
 
     def get_neighbours(self):
         return sorted(self.neighbours, key=lambda t:t[1].id, reverse=True)
-
-
 
     def link(self, v, e):
         self.neighbours.add((v, e))
@@ -63,10 +62,6 @@ class Vertex:
     def compose_id(run_id, vertex_id):
         return (run_id << 32) | vertex_id
 
-    #def __eq__(self, other):
-    #    if isinstance(other, Vertex):
-    #        return self.id == other.id
-    #    return False
 
     def __repr__(self):
         return f"Vertex <{self.run},{self.minor_id}>"
