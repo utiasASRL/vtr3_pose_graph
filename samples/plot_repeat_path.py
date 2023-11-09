@@ -4,8 +4,8 @@ import numpy as np
 
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
 
-from src.vtr_pose_graph.graph_iterators import TemporalIterator, PriviledgedIterator
-import src.vtr_pose_graph.graph_utils as g_utils
+from vtr_pose_graph.graph_iterators import TemporalIterator, PriviledgedIterator
+import vtr_pose_graph.graph_utils as g_utils
 import vtr_regression_testing.path_comparison as vtr_path
 import argparse
 
@@ -14,10 +14,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                         prog = 'Verify Point Cloud',
                         description = 'Plots point cloud to verify alignment')
-    parser.add_argument('-g', '--graph', default="graph")      # option that takes a value
+    parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"))      # option that takes a value
     args = parser.parse_args()
 
-    offline_graph_dir = os.path.join(os.getenv("VTRROOT"), "vtr_testing_lidar", "tmp", args.graph)
+    offline_graph_dir = args.graph
     factory = Rosbag2GraphFactory(offline_graph_dir)
 
     test_graph = factory.buildGraph()
