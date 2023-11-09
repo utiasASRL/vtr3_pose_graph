@@ -12,3 +12,14 @@ This library depends on ROS2 for reading the bag files used in VT&R. It is recom
 The samples contain tools for plotting paths. 
 
 There is an optional open3d dependency for visualization. 
+
+To use vtr3_pose_graph you can install with 
+```bash
+pip3 install -e .
+```
+
+To run the samples, after installing
+```bash
+source $VTRSRC/main/install/setup.bash #For ROS2 and VTR message types
+python3 samples/plot_repeat_path.py -g /path/to/graph
+```
