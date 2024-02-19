@@ -45,7 +45,7 @@ if __name__ == '__main__':
     plt.axis('equal')
 
     if args.filter is None:
-        args.filter = list(range(test_graph.major_id))
+        args.filter = [i+1 for i in range(test_graph.major_id)]
 
     for i in range(test_graph.major_id):
         if i+1 not in args.filter:
@@ -65,7 +65,7 @@ if __name__ == '__main__':
             dist.append(vtr_path.distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
             path_len += np.linalg.norm(e.T.r_ba_ina())
         
-        print(f"Path {i} was {path_len:.3f}m long")
+        print(f"Path {i+1} was {path_len:.3f}m long")
         if len(t) < 2:
             continue
 
