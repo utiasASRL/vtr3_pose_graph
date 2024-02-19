@@ -12,9 +12,10 @@ import argparse
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-                        prog = 'Verify Point Cloud',
-                        description = 'Plots point cloud to verify alignment')
-    parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"))      # option that takes a value
+                        prog = 'Plot Repeat Path',
+                        description = 'Plots scatter of points to show path. Also calcualtes RMS error')
+    parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"), help="The filepath to the pose graph folder. (Usually /a/path/graph)")      # option that takes a value
+    parser.add_argument('-f', '--filter', type=int, nargs="*", help="Select only some of the repeat runs. Default plots all runs.")
     args = parser.parse_args()
 
     offline_graph_dir = args.graph
@@ -43,8 +44,12 @@ if __name__ == '__main__':
     plt.scatter(x, y, label="Teach")
     plt.axis('equal')
 
-    
+    if args.filter is None:
+        args.filter = list(range(test_graph.major_id))
+
     for i in range(test_graph.major_id):
+        if i+1 not in args.filter:
+            continue
         v_start = test_graph.get_vertex((i+1,0))
 
         x = []
@@ -60,7 +65,7 @@ if __name__ == '__main__':
             dist.append(vtr_path.distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
             path_len += np.linalg.norm(e.T.r_ba_ina())
         
-        print(f"Path {i} was {path_len}m long")
+        print(f"Path {i} was {path_len:.3f}m long")
         if len(t) < 2:
             continue
 
