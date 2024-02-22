@@ -10,20 +10,25 @@ from sensor_msgs_py.point_cloud2 import read_points
 from pylgmath import Transformation
 
 
-def plot_graph(g: Graph):
+def plot_graph(g: Graph, filter_runs=None):
+    if filter_runs is None:
+        filter_runs = [i+1 for i in range(g.major_id)]
+
     f = plt.figure("Plotting Pose Graph")
-    ax = f.add_axes([0, 0, 1, 1])
+    ax = f.add_axes([0, 0, 0.5, 1])
     ax.set_title(f"{g}")
     for v, e in DepthFirstSearchIterator(g.root):
-        ax.scatter([v.minor_id], [v.run])
 
-        try:
-            from_v = g.get_vertex(e.from_id)
-            to_v = g.get_vertex(e.to_id)
-            colour = "red" if e.is_temporal() else "blue"
-            ax.plot([from_v.minor_id, to_v.minor_id], [from_v.run, to_v.run], c=colour)
-        except:
-            continue
+        if v.taught or v.run in filter_runs:
+            ax.scatter([v.minor_id], [v.run])
+
+            try:
+                from_v = g.get_vertex(e.from_id)
+                to_v = g.get_vertex(e.to_id)
+                colour = "red" if e.is_temporal() else "blue"
+                ax.plot([from_v.minor_id, to_v.minor_id], [from_v.run, to_v.run], c=colour)
+            except:
+                continue
     red_patch = mpatches.Patch(color='red', label='Temporal Edge')
     blue_patch = mpatches.Patch(color='blue', label='Spatial Edge')
     ax.legend(handles=[red_patch, blue_patch])
