@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
                         prog = 'Plot Repeat Path',
-                        description = 'Plots scatter of points to show path. Also calcualtes RMS error')
+                        description = 'Plots scatter of points to show path. Also calculates RMS error')
     parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"), help="The filepath to the pose graph folder. (Usually /a/path/graph)")
     parser.add_argument('-f', '--filter', type=int, nargs="*", help="Select only some of the repeat runs. Default plots all runs.")
     args = parser.parse_args()
@@ -85,7 +85,9 @@ if __name__ == '__main__':
         plt.xlabel("Time (s)")
 
         plt.figure(2)
-        rmse = np.sqrt(np.trapz(np.array(dist)**2, t) / (t[-1] - t[0]))
+        rmse_int = np.sqrt(np.trapz(np.array(dist)**2, t) / (t[-1] - t[0]))
+        rmse = np.sqrt(np.mean(np.array(dist)**2))
+        print(rmse, rmse_int)
 
         plt.plot(t, dist, label=f"RMSE: {rmse:.3f}m for Repeat {i+1}")
         plt.legend()
