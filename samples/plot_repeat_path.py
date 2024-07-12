@@ -62,7 +62,7 @@ if __name__ == '__main__':
             x.append(v.T_v_w.r_ba_ina()[0])
             y.append(v.T_v_w.r_ba_ina()[1])
             t.append(v.stamp / 1e9)
-            dist.append(vtr_path.distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
+            dist.append(vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
             path_len += np.linalg.norm(e.T.r_ba_ina())
         
         print(f"Path {i+1} was {path_len:.3f}m long with {len(x)} vertices")
