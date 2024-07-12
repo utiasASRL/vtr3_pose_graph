@@ -62,6 +62,35 @@ def distance_to_path(point: np.ndarray, path: np.ndarray):
     
     return min(min_proj, min_dist)
 
+def signed_distance_to_path(point: np.ndarray, path: np.ndarray):
+    """Path is assumed to be formatted from path_to_matrix"""
+
+    assert len(path.shape) == 2 and path.shape[1] == 7, "Matrix is ill formed. Should be nx7"
+    assert len(point.shape) <= 2 and point.size == 3, "Point must be 3 dimensional"
+    
+    x0 = path[:, :3]
+    tangent = path[:, 3:6]
+    l = path[:, 6]
+    points = np.zeros_like(x0)
+    points[:] = point.T
+
+    norm_vec = np.cross((points - x0), tangent)
+    norm_dist = np.linalg.norm(norm_vec, axis=1)
+    dists = np.linalg.norm((points - x0), axis=1)
+    min_dist = np.min(dists)
+
+    proj = np.diagonal(np.dot(points - x0, tangent.T))
+    segment_filter = (proj > 0) & (proj < l)
+
+    min_proj = 1e6
+
+    #Handle the edge cases where points are beyond the limits of the path
+    if np.sum(segment_filter) > 0:
+        idx_min_proj = np.argmin(norm_dist[segment_filter])
+        if norm_dist[segment_filter][idx_min_proj] < min_dist:
+            return np.sign(norm_vec[segment_filter][idx_min_proj, 2]) * norm_dist[segment_filter][idx_min_proj]
+    return min_dist
+
 def distances_to_path(points: np.ndarray, path: np.ndarray):
     """Path is assumed to be formatted from path_to_matrix"""
 

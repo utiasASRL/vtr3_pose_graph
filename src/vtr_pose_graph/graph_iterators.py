@@ -75,8 +75,8 @@ def teach_filter(vertex: Vertex, edge: Edge):
 
 class PriviledgedIterator(DepthFirstSearchIterator):
 
-    def __init__(self, vertex_start: Vertex):
-        super().__init__(vertex_start, t_filter_fcn=teach_filter)
+    def __init__(self, vertex_start: Vertex, forward=True):
+        super().__init__(vertex_start, t_filter_fcn=teach_filter, d_filter_fcn = (forward_filter if forward else reverse_filter))
 
 class SlidingWindowIterator(BreadthFirstSearchIterator):
 

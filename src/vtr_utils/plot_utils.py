@@ -71,8 +71,8 @@ def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     map_pc['z'] = map_pts[2]
     return map_pc
 
-def extract_points_and_map(graph: Graph, v: Vertex, world_frame=True):
-    curr_pts, T_v_s = extract_points_from_vertex(v, return_tf=True)
+def extract_points_and_map(graph: Graph, v: Vertex, world_frame=True, points_type="filtered_point_cloud"):
+    curr_pts, T_v_s = extract_points_from_vertex(v, msg=points_type, return_tf=True)
     
     map_ptr = v.get_data("pointmap_ptr")
     map_v = g_utils.get_closest_teach_vertex(graph.get_vertex(map_ptr.map_vid))

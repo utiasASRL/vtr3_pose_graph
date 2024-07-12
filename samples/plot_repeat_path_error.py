@@ -32,22 +32,28 @@ if __name__ == '__main__':
 
     x = []
     y = []
+    z = []
     t = []
 
     for v, e in PriviledgedIterator(v_start):
         x.append(v.T_v_w.r_ba_ina()[0])
         y.append(v.T_v_w.r_ba_ina()[1])
+        z.append(v.T_v_w.r_ba_ina()[2])
         t.append(v.stamp / 1e9)
 
     plt.figure(0)
     plt.scatter(x, y, label="Teach")
     plt.axis('equal')
 
+    plt.figure(1)
+    plt.scatter(x, z, label="Teach")
+
     
     v_start = test_graph.get_vertex((args.run,0))
 
     x = []
     y = []
+    z = []
     t = []
     dist = []
     path_len = 0
@@ -55,18 +61,30 @@ if __name__ == '__main__':
     for v, e in TemporalIterator(v_start):
         x.append(v.T_v_w.r_ba_ina()[0])
         y.append(v.T_v_w.r_ba_ina()[1])
+        z.append(v.T_v_w.r_ba_ina()[2])
         t.append(v.stamp / 1e9)
-        dist.append(vtr_path.distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
+        dist.append(vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
         path_len += np.linalg.norm(e.T.r_ba_ina())
     
+
+
     print(f"Path {args.run} was {path_len:.3f}m long")
     if len(t) > 2:
+        c = [abs(v) for v in dist]
 
         plt.figure(0)
-        plt.scatter(x, y, label=f"Repeat {args.run}", c=dist)
+        plt.scatter(x, y, label=f"Repeat {args.run}", c=c)
         plt.axis('equal')
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
+        plt.colorbar(label="Lateral Error (m)")
+        plt.legend()
+
+        plt.figure(1)
+        plt.title("Elevation of Path")
+        plt.scatter(x, z, label=f"Repeat {args.run}", c=c)
+        plt.xlabel('x (m)')
+        plt.ylabel('z (m)')
         plt.colorbar(label="Lateral Error (m)")
         plt.legend()
 

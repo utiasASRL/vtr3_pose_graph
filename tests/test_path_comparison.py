@@ -21,7 +21,7 @@ def test_distance_to_path(short_path, point, expected, message):
 
 
 @pytest.mark.parametrize("points,expected, message", [(np.array([[0.5, 0, 0], [0.25, 1, 0], [0.25, 0.5, 0], [3.0, 0, 0], [3.5, 1.0, 0], [-3.0, 0.0, 0]]), 
-                                                       np.array([0, 1, 0.5, 1/np.sqrt(2), 0.5, 3.0]), "Check all simealtaneously"),])
+                                                       np.array([0, 1, 0.5, 1/np.sqrt(2), 0.5, 3.0]), "Check all simultaneously"),])
 def test_distances_to_path(short_path, points, expected, message):
     assert (distances_to_path(points, short_path) == expected).all(), message
 

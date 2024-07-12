@@ -65,7 +65,7 @@ if __name__ == '__main__':
             dist.append(vtr_path.distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
             path_len += np.linalg.norm(e.T.r_ba_ina())
         
-        print(f"Path {i+1} was {path_len:.3f}m long")
+        print(f"Path {i+1} was {path_len:.3f}m long with {len(x)} vertices")
         if len(t) < 2:
             continue
 
@@ -105,6 +105,16 @@ if __name__ == '__main__':
         plt.plot(t, np.hypot(vx, vy), label=f"V for Repeat {i+1}")
         plt.legend()
         plt.ylabel("Velocity (m/s)")
+        plt.xlabel("Time (s)")
+
+        plt.figure(4)
+        acc_x = np.gradient(vx, t).squeeze()
+        acc_y = np.gradient(vy, t).squeeze()
+        plt.plot(t, acc_x, label=f"Acc_x for Repeat {i+1}")
+        plt.plot(t, acc_y, label=f"Acc_y for Repeat {i+1}")
+        plt.plot(t, np.hypot(acc_x, acc_y), label=f"Acc for Repeat {i+1}")
+        plt.legend()
+        plt.ylabel("Acceleration (m/s^2)")
         plt.xlabel("Time (s)")
     plt.show()
 

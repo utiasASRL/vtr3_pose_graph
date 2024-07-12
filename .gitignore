@@ -12,3 +12,4 @@ src/vtr3_pyposegraph.egg-info
 src/vtr3_pyposegraph.egg-info
 src/vtr3_pyposegraph.egg-info
 *.db3
+build
