@@ -90,9 +90,12 @@ if __name__ == '__main__':
 
 
         plt.figure(2)
-        rmse = np.sqrt(np.trapz(np.array(dist)**2, t) / (t[-1] - t[0]))
+        plt.grid()
+        rmse = np.sqrt(np.trapz(np.array(dist[5:])**2, t[5:]) / (t[-1] - t[0]))
 
         plt.plot(t, dist, label=f"RMSE: {rmse:.3f}m for Repeat {args.run}")
+        print(f"RMSE: {rmse:.3f}m for Repeat {args.run}")
+        print(f"Max Error: {max(c):.3f}m for Repeat {args.run}")
         plt.legend()
         plt.ylabel("Path Tracking Error (m)")
         plt.xlabel("Time (s)")

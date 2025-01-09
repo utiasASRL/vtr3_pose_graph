@@ -66,7 +66,7 @@ if __name__ == '__main__':
             path_len += np.linalg.norm(e.T.r_ba_ina())
         
         print(f"Path {i+1} was {path_len:.3f}m long with {len(x)} vertices")
-        if len(t) < 2:
+        if len(t) < 2 or v.taught:
             continue
 
         plt.figure(0)

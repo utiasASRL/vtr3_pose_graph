@@ -71,12 +71,11 @@ class TemporalIterator(DepthFirstSearchIterator):
         DepthFirstSearchIterator.__init__(self, vertex_start, temporal_filter, forward_filter if to_goal else reverse_filter)
 
 def teach_filter(vertex: Vertex, edge: Edge):
-    return edge.is_teach()
-
+    return vertex.taught
 class PriviledgedIterator(DepthFirstSearchIterator):
 
     def __init__(self, vertex_start: Vertex, forward=True):
-        super().__init__(vertex_start, t_filter_fcn=teach_filter, d_filter_fcn = (forward_filter if forward else reverse_filter))
+        super().__init__(vertex_start, t_filter_fcn=teach_filter)
 
 class SlidingWindowIterator(BreadthFirstSearchIterator):
 

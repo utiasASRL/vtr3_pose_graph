@@ -56,9 +56,6 @@ def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     map_ptr = v.get_data("pointmap_ptr")
     teach_v = graph.get_vertex(map_ptr.map_vid)
 
-
-    raw_pc_msg = teach_v.get_data("pointmap")
-    map_pc = read_points(raw_pc_msg.point_cloud)
     map_pts = extract_points_from_vertex(teach_v, msg="pointmap")
     
     if world_frame:
@@ -66,9 +63,6 @@ def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     else:
         map_pts = convert_points_to_frame(map_pts,  v.T_w_v.inverse() * teach_v.T_w_v)
 
-    map_pc['x'] = map_pts[0]
-    map_pc['y'] = map_pts[1]
-    map_pc['z'] = map_pts[2]
     return map_pts
 
 def extract_points_and_map(graph: Graph, v: Vertex, world_frame=True, points_type="filtered_point_cloud"):

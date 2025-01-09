@@ -54,7 +54,7 @@ class Vertex:
         self._mark_teach(e)
 
     def _mark_teach(self, e: Edge):
-        if e.is_teach() and self.id == e.to_id:
+        if e.is_teach() and (self.id == e.to_id or self.id == e.from_id):
             self.taught = True
 
 
