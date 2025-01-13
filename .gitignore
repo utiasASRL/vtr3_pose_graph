@@ -1,0 +1,15 @@
+.pytest_cache
+__pycache__
+*.pyc
+*.png
+*.json
+.idea/*
+src/__pycache__
+src/simple_graph/__pycache__
+src/vtr_utils/__pycache__
+*.egg-info
+src/vtr3_pyposegraph.egg-info
+src/vtr3_pyposegraph.egg-info
+src/vtr3_pyposegraph.egg-info
+*.db3
+build
