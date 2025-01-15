@@ -1,7 +1,7 @@
 import os
 import csv
 import numpy as np
-from pylgmath.se3 import se3op # USE VEC2TRAN AND TRANVEC 
+from pylgmath import se3op # USE VEC2TRAN AND TRANVEC 
 import argparse
 import vtr_pose_graph.graph_utils as g_utils
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
