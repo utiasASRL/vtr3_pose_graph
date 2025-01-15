@@ -1,6 +1,7 @@
 import os
 import csv
 import numpy as np
+from pylgmath.se3 import se3op # USE VEC2TRAN AND TRANVEC 
 import argparse
 import vtr_pose_graph.graph_utils as g_utils
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
@@ -9,9 +10,13 @@ from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 
 def export_relative_transforms(graph_path, output_path):
-    # Check if output_path is a directory and append default filename
+    # Check if output_path is a directory and append default filenames
     if os.path.isdir(output_path):
-        output_path = os.path.join(output_path, "relative_transforms.csv")
+        output_path_mat = os.path.join(output_path, "relative_transforms_mat_test.csv")
+        output_path_abs = os.path.join(output_path, "relative_transforms_test.csv")
+    else:
+        output_path_mat = output_path.replace(".csv", "_mat_test.csv")
+        output_path_abs = output_path.replace(".csv", "_test.csv")
 
     # Load the pose graph
     print(f"Loading graph from {graph_path}...")
@@ -26,16 +31,22 @@ def export_relative_transforms(graph_path, output_path):
     # Initialize iterator
     v_start = graph.root
     relative_transforms = []
+    relative_transforms_mat = []
+
 
     for v, e in PriviledgedIterator(v_start):
         if e is not None:
             # Extract relative transform
             T_rel = e.T
+            print(T_rel)
+            timestamp = v.stamp / 1e9  # Convert nanoseconds to seconds
+
+            T_rel_matrix = T_rel.matrix()
+            relative_transforms_mat.append([float(timestamp)] + T_rel_matrix.flatten().tolist())
 
             # Extract relative position and orientation
             rel_position = T_rel.r_ba_ina()
             rel_rotation = R.from_matrix(T_rel.C_ba()).as_euler('xyz', degrees=False)
-            timestamp = v.stamp / 1e9  # Convert nanoseconds to seconds
             
             # # Adjust the y-coordinate to correct the flipping issue
             rel_position[1] = -rel_position[1]
@@ -71,15 +82,25 @@ def export_relative_transforms(graph_path, output_path):
             ])
         prev_vertex = v
     '''
+    
+    # Save relative transforms matrix to CSV file
+    with open(output_path_mat, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        # Write header
+        header = ['timestamp'] + [f'm{i}{j}' for i in range(4) for j in range(4)]
+        csvwriter.writerow(header)
+        # Write data
+        csvwriter.writerows(relative_transforms_mat)
+        print(f"Saved relative transforms matrix to {output_path_mat}")
 
-    print("first relative transformation", relative_transforms[0], relative_transforms[1], relative_transforms[2])
-    # Save to CSV file
-    with open(output_path, 'w', newline='') as csvfile:
+    # Save relative transforms to CSV file
+    with open(output_path_abs, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         # Write header
         csvwriter.writerow(['timestamp', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
         # Write data
         csvwriter.writerows(relative_transforms)
+        print(f"Saved relative transforms to {output_path_abs}")
 
     print(f"Relative transforms saved to {output_path}")
     
@@ -128,3 +149,5 @@ if __name__ == "__main__":
             print(f"Created output directory: {output_dir}")
 
     export_relative_transforms(args.graph, args.output)
+
+

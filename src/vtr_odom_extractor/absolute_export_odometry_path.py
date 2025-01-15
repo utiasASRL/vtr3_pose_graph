@@ -2,6 +2,7 @@ import os
 import csv
 import numpy as np
 import argparse
+from pylgmath import se3op # USE VEC2TRAN AND TRANVEC 
 import vtr_pose_graph.graph_utils as g_utils
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
 from vtr_pose_graph.graph_iterators import PriviledgedIterator
@@ -9,9 +10,13 @@ from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 
 def export_absolute_transforms(graph_path, output_path):
-    # Check if output_path is a directory and append default filename
+    # Check if output_path is a directory and append default filenames
     if os.path.isdir(output_path):
-        output_path = os.path.join(output_path, "absolute_transforms.csv")
+        output_path_mat = os.path.join(output_path, "absolute_transforms_mat_test.csv")
+        output_path_abs = os.path.join(output_path, "absolute_transforms_test.csv")
+    else:
+        output_path_mat = output_path.replace(".csv", "_mat_test.csv")
+        output_path_abs = output_path.replace(".csv", "_test.csv")
 
     # Load the pose graph
     print(f"Loading graph from {graph_path}...")
@@ -21,44 +26,55 @@ def export_absolute_transforms(graph_path, output_path):
     print(f"Graph {graph} has {graph.number_of_vertices} vertices and {graph.number_of_edges} edges")
 
     # Set world frame
-    g_utils.set_world_frame(graph, graph.root)
+    g_utils.set_world_frame(graph, graph.root) # maybe something fishy going on with set_world_frame
 
     # Initialize iterator
     v_start = graph.root
+    absolute_transforms_mat = []
     absolute_transforms = []
-    current_pose = np.eye(4)  # Start at origin
 
-    for v, e in PriviledgedIterator(v_start):
-        if e is not None:
-            # Extract absolute transform
-            T_abs = v.T_v_w
+    for v, _ in PriviledgedIterator(v_start):
+        # Extract absolute transform
+        T_abs = v.T_v_w
 
-            # Extract absolute position and orientation
-            abs_position = T_abs.r_ba_ina()
-            abs_rotation = R.from_matrix(T_abs.C_ba()).as_euler('xyz', degrees=False)
-            timestamp = v.stamp / 1e9  # Convert nanoseconds to seconds
+        # Extract absolute transform as 4x4 matrix
+        T_abs_matrix = T_abs.matrix()
+        timestamp = v.stamp / 1e9  # Convert nanoseconds to seconds
 
-            # Combine timestamp, absolute position (x,y,z) and orientation (roll,pitch,yaw)
-            absolute_transforms.append([
-                float(timestamp),
-                float(abs_position[0]), float(abs_position[1]), float(abs_position[2]),
-                float(abs_rotation[0]), float(abs_rotation[1]), float(abs_rotation[2])
-            ])
-    print("first absolute transformation", absolute_transforms[0], absolute_transforms[1], absolute_transforms[2])
+        # Flatten the 4x4 matrix and prepend the timestamp
+        absolute_transforms_mat.append([float(timestamp)] + T_abs_matrix.flatten().tolist())
+        
+        # Use pylgmath function tran2vec to convert the 4x4 transformation matrix to a vector
+        abs_vector = se3op.tran2vec(T_abs_matrix)
 
-    # Save to CSV file
-    with open(output_path, 'w', newline='') as csvfile:
+        # Combine timestamp and the transformation vector
+        absolute_transforms.append([float(timestamp)] + abs_vector.tolist())
+
+    print("T_abs_mat", T_abs_matrix)
+    print("abs transforms_mat", absolute_transforms_mat[1])
+    print("abs_vec", abs_vector[1])
+    print("abs vec transforms", absolute_transforms[1]) 
+
+
+    # Save absolute transforms matrix to CSV file
+    with open(output_path_mat, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        # Write header
+        header = ['timestamp'] + [f'm{i}{j}' for i in range(4) for j in range(4)]
+        csvwriter.writerow(header)
+        # Write data
+        csvwriter.writerows(absolute_transforms_mat)
+        print(f"Saved absolute transforms matrix to {output_path_mat}")
+
+    # Save absolute transforms to CSV file
+    with open(output_path_abs, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         # Write header
         csvwriter.writerow(['timestamp', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
         # Write data
         csvwriter.writerows(absolute_transforms)
+        print(f"Saved absolute transforms to {output_path_abs}")
     
-    # Save to CSV
-    header = "timestamp,dx,dy,dz,droll,dpitch,dyaw"
-    np.savetxt(output_path, absolute_transforms, delimiter=",", header=header, comments="")
-    print(f"Relative odometry path saved to {output_path}")
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Export odometry path from pose graph.")
     parser.add_argument("-g", "--graph", required=True, help="Path to the pose graph directory.")
