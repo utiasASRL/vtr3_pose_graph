@@ -16,6 +16,7 @@ def path_to_matrix(graph: Graph, path: GraphIterator):
     points = np.zeros((0, 7))
     for v, e in path:
         if e.from_id == INVALID_ID or e.to_id == INVALID_ID:
+            print("Invalid edge")
             continue
         x0 = graph.get_vertex(e.from_id).T_v_w.r_ba_ina()
         x1 = graph.get_vertex(e.to_id).T_v_w.r_ba_ina()

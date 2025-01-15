@@ -25,7 +25,6 @@ if __name__ == '__main__':
     g_utils.set_world_frame(test_graph, test_graph.root)
 
     v_start = test_graph.root
-
     path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start))
     print(path_matrix.shape)
 

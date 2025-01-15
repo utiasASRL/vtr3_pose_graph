@@ -45,7 +45,9 @@ def export_absolute_transforms(graph_path, output_path):
         absolute_transforms_mat.append([float(timestamp)] + T_abs_matrix.flatten().tolist())
         
         # Use pylgmath function tran2vec to convert the 4x4 transformation matrix to a vector
-        abs_vector = se3op.tran2vec(T_abs_matrix)
+        abs_vector = np.array(se3op.tran2vec(T_abs_matrix).tolist())
+        abs_vector = abs_vector.flatten()
+
 
         # Combine timestamp and the transformation vector
         absolute_transforms.append([float(timestamp)] + abs_vector.tolist())
@@ -53,7 +55,7 @@ def export_absolute_transforms(graph_path, output_path):
     print("T_abs_mat", T_abs_matrix)
     print("abs transforms_mat", absolute_transforms_mat[1])
     print("abs_vec", abs_vector[1])
-    print("abs vec transforms", absolute_transforms[1]) 
+    print("abs vec transforms", absolute_transforms[1])
 
 
     # Save absolute transforms matrix to CSV file
