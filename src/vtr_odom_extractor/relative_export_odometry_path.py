@@ -37,7 +37,7 @@ def export_relative_transforms(graph_path, output_path):
     for v, e in PriviledgedIterator(v_start):
         if e is not None:
             # Extract relative transform
-            T_rel = e.T.inverse()
+            T_rel = e.T
             print(T_rel)
             timestamp = v.stamp / 1e9  # Convert nanoseconds to seconds
 
