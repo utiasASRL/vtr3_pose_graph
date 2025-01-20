@@ -43,7 +43,6 @@ if __name__ == '__main__':
 
     plt.show()
 
-#
-#
-#
-#
+
+#desiree@Desiree-ThinkPad-P53:~/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph$ python3 samples/plot_teach_path.py -g /home/desiree/ASRL/vtr3/data/ExistingGraph/pose_graph
+
