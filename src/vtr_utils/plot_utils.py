@@ -77,13 +77,13 @@ def extract_points_and_map(graph: Graph, v: Vertex, world_frame=True, points_typ
     map_ptr = v.get_data("pointmap_ptr")
     map_v = g_utils.get_closest_teach_vertex(graph.get_vertex(map_ptr.map_vid))
     map_ptr = map_v.get_data("pointmap_ptr")
-    teach_v = graph.get_vertex(map_ptr.map_vid)
+    teach_v = graph.get_vertex(map_ptr.map_vid) 
 
     map_pts = extract_points_from_vertex(teach_v, msg="pointmap")
     
     if world_frame:
         curr_pts = convert_points_to_frame(curr_pts, v.T_w_v)
-        map_pts = convert_points_to_frame(map_pts, teach_v.T_w_v)
+        map_pts = convert_points_to_frame(map_pts, teach_v.T_w_v) #use compounding of t_w_V and the relative one
     else:
         map_pts = convert_points_to_frame(map_pts,  v.T_w_v.inverse() * teach_v.T_w_v)
 
