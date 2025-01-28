@@ -62,7 +62,7 @@ def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     map_pts = extract_points_from_vertex(teach_v, msg="pointmap")
     
     if world_frame:
-        map_pts = convert_points_to_frame(map_pts, teach_v.T_w_v)
+        map_pts = convert_points_to_frame(map_pts, teach_v.T_w_v) #use compounding of t_w_v and the relative one instead of teach_v.T_w_v 
     else:
         map_pts = convert_points_to_frame(map_pts,  v.T_w_v.inverse() * teach_v.T_w_v)
 

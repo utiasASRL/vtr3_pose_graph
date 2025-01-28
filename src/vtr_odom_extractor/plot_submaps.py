@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
             robot_position = vertex.T_v_w.r_ba_ina().reshape((3,) )
 
-            x.append(vertex.T_v_w.r_ba_ina()[0])
+            x.append(vertex.T_v_w.r_ba_ina()[0]) 
             y.append(vertex.T_v_w.r_ba_ina()[1])
 
             pcd.points = o3d.utility.Vector3dVector(new_points.T)
