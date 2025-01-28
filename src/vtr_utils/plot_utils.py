@@ -56,15 +56,16 @@ def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     map_ptr = v.get_data("pointmap_ptr")
     teach_v = graph.get_vertex(map_ptr.map_vid)
 
-
     raw_pc_msg = teach_v.get_data("pointmap")
     map_pc = read_points(raw_pc_msg.point_cloud)
     map_pts = extract_points_from_vertex(teach_v, msg="pointmap")
     
     if world_frame:
-        map_pts = convert_points_to_frame(map_pts, teach_v.T_w_v) #use compounding of t_w_v and the relative one instead of teach_v.T_w_v 
+        # Use the compound transformation of T_w_v and the relative transform
+        relative_transform = v.T_w_v * teach_v.T_w_v.inverse() #T_w_v should be identity for vertices with submaps and = to last_submap_pose.inverse() * current_pose for vertices without submpas
+        map_pts = convert_points_to_frame(map_pts, v.T_w_v * relative_transform)
     else:
-        map_pts = convert_points_to_frame(map_pts,  v.T_w_v.inverse() * teach_v.T_w_v)
+        map_pts = convert_points_to_frame(map_pts, v.T_w_v.inverse() * teach_v.T_w_v)
 
     map_pc['x'] = map_pts[0]
     map_pc['y'] = map_pts[1]
@@ -83,7 +84,7 @@ def extract_points_and_map(graph: Graph, v: Vertex, world_frame=True, points_typ
     
     if world_frame:
         curr_pts = convert_points_to_frame(curr_pts, v.T_w_v)
-        map_pts = convert_points_to_frame(map_pts, teach_v.T_w_v) #use compounding of t_w_V and the relative one
+        map_pts = convert_points_to_frame(map_pts, teach_v.T_w_v) 
     else:
         map_pts = convert_points_to_frame(map_pts,  v.T_w_v.inverse() * teach_v.T_w_v)
 
