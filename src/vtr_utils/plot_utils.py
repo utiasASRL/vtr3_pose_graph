@@ -62,7 +62,7 @@ def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     
     if world_frame:
         # Use the compound transformation of T_w_v and the relative transform
-        relative_transform = v.T_w_v * teach_v.T_w_v.inverse() #T_w_v should be identity for vertices with submaps and = to last_submap_pose.inverse() * current_pose for vertices without submpas
+        relative_transform = teach_v.T_w_v.inverse() * v.T_w_v  #relative transform should be identity for vertices with submaps and = to last_submap_pose.inverse() * current_pose for vertices without submpas
         map_pts = convert_points_to_frame(map_pts, v.T_w_v * relative_transform)
     else:
         map_pts = convert_points_to_frame(map_pts, v.T_w_v.inverse() * teach_v.T_w_v)
