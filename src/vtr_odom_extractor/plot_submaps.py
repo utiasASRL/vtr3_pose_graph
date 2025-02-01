@@ -7,7 +7,10 @@ import matplotlib.pyplot as plt
 from sensor_msgs_py.point_cloud2 import read_points
 import open3d as o3d
 from pylgmath import Transformation
-from vtr_utils.plot_utils import convert_points_to_frame, extract_map_from_vertex, downsample, extract_points_from_vertex, range_crop
+import sys
+sys.path.append('/home/desiree/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/src')
+
+from vtr_utils.plot_utils import extract_map_from_vertex
 import argparse
 
 
@@ -84,5 +87,3 @@ if __name__ == '__main__':
             while time.time() - t < 0.1 or paused:
                 vis.poll_events()
                 vis.update_renderer()
-
-#desiree@Desiree-ThinkPad-P53:~/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph$ python3 src/vtr_odom_extractor/plot_submaps.py -g /home/desiree/ASRL/vtr3/data/ExistingGraph/pose_graph
