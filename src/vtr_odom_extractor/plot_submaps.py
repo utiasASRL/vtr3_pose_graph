@@ -64,7 +64,7 @@ if __name__ == '__main__':
         paused = True
         for vertex, e in TemporalIterator(v_start):
 
-            new_points = extract_map_from_vertex(test_graph, vertex)
+            new_points, map_ptr = extract_map_from_vertex(test_graph, vertex)
 
             print(new_points.shape)
 
@@ -74,9 +74,12 @@ if __name__ == '__main__':
             y.append(vertex.T_v_w.r_ba_ina()[1])
 
             pcd.points = o3d.utility.Vector3dVector(new_points.T)
-            pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
-            colors = np.asarray(pcd.colors)
+            if np.allclose(map_ptr.matrix(), np.eye(4)):
+                pcd.paint_uniform_color((1.0, 0.0, 0.0))  # Red color for identity matrix
+            else:
+                pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
 
+            colors = np.asarray(pcd.colors)
 
             if first:
                 first = False

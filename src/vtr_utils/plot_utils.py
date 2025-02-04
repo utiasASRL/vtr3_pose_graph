@@ -55,9 +55,7 @@ def convert_points_to_frame(pts: np.ndarray, frame: Transformation):
 def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     map_ptr = v.get_data("pointmap_ptr")
     teach_v = graph.get_vertex(map_ptr.map_vid)
-    print(map_ptr)
     T_map_v = Transformation(xi_ab=np.array(map_ptr.t_v_this_map.xi).reshape(6, 1))
-    print(T_map_v)
 
     raw_pc_msg = teach_v.get_data("pointmap")
     map_pc = read_points(raw_pc_msg.point_cloud)
@@ -66,7 +64,7 @@ def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     if world_frame:
         # Use the compound transformation of T_w_v and the relative transform
         print(v.T_w_v)
-        relative_transform = v.T_w_v * T_map_v   #relative transform should be identity for vertices with submaps and = to last_submap_pose.inverse() * current_pose for vertices without submpas
+        relative_transform = v.T_w_v * T_map_v #teach_v CHANGING THIS MAKES THE POINTCLOUD PLOT MORE BUT MAKES THE PATH MOVE
         map_pts = convert_points_to_frame(map_pts, relative_transform)
     else:
         map_pts = convert_points_to_frame(map_pts, v.T_w_v.inverse() * teach_v.T_w_v)
@@ -74,7 +72,7 @@ def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     map_pc['x'] = map_pts[0]
     map_pc['y'] = map_pts[1]
     map_pc['z'] = map_pts[2]
-    return map_pts
+    return map_pts, T_map_v
 
 def extract_points_and_map(graph: Graph, v: Vertex, world_frame=True, points_type="filtered_point_cloud"):
     curr_pts, T_v_s = extract_points_from_vertex(v, msg=points_type, return_tf=True)
