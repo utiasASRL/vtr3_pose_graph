@@ -65,7 +65,7 @@ if __name__ == '__main__':
         for vertex, e in TemporalIterator(v_start):
 
             new_points, map_ptr = extract_map_from_vertex(test_graph, vertex)
-
+            print(map_ptr)
             print(new_points.shape)
 
             robot_position = vertex.T_v_w.r_ba_ina().reshape((3,) )
