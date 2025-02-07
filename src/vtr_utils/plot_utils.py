@@ -63,7 +63,7 @@ def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     
     if world_frame:
         # Use the compound transformation of T_w_v and the relative transform
-        print(v.T_w_v)
+        #print(v.T_w_v)
         relative_transform = v.T_w_v * T_map_v #teach_v CHANGING THIS MAKES THE POINTCLOUD PLOT MORE BUT MAKES THE PATH MOVE
         map_pts = convert_points_to_frame(map_pts, relative_transform)
     else:

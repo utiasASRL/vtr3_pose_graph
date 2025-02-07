@@ -65,10 +65,11 @@ if __name__ == '__main__':
         for vertex, e in TemporalIterator(v_start):
 
             new_points, map_ptr = extract_map_from_vertex(test_graph, vertex)
-            print(map_ptr)
-            print(new_points.shape)
+            #print(map_ptr)
+            #print(new_points.shape)
 
             robot_position = vertex.T_v_w.r_ba_ina().reshape((3,) )
+            print('robot position = ', robot_position)
 
             x.append(vertex.T_v_w.r_ba_ina()[0]) 
             y.append(vertex.T_v_w.r_ba_ina()[1])
@@ -79,13 +80,17 @@ if __name__ == '__main__':
             else:
                 pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
 
-            colors = np.asarray(pcd.colors)
+            # Create coordinate frame for the vertex
+            frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=robot_position)
 
             if first:
                 first = False
                 vis.add_geometry(pcd)
+                vis.add_geometry(frame)
             else:
                 vis.update_geometry(pcd)
+                vis.remove_geometry(frame, reset_bounding_box=False)
+                vis.add_geometry(frame)
             t = time.time()
             while time.time() - t < 0.1 or paused:
                 vis.poll_events()
