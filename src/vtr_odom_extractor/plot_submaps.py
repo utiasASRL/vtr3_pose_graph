@@ -1,24 +1,17 @@
 import os
 import time
-
 import numpy as np
 import matplotlib.pyplot as plt
-
 from sensor_msgs_py.point_cloud2 import read_points
 import open3d as o3d
-from pylgmath import Transformation
 import sys
-sys.path.append('/home/desiree/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/src')
-
 from vtr_utils.plot_utils import extract_map_from_vertex
 import argparse
-
-
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
 from vtr_pose_graph.graph_iterators import TemporalIterator, PriviledgedIterator, SpatialIterator
 import vtr_pose_graph.graph_utils as g_utils
 
-
+sys.path.append('/home/desiree/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/src')
 
 if __name__ == '__main__':
 
@@ -57,19 +50,20 @@ if __name__ == '__main__':
     vis.poll_events()
     vis.update_renderer()
 
-    radius_of_interest = 100
-
     for i in range(test_graph.major_id + 1):
         v_start = test_graph.get_vertex((i, 0))
         paused = True
-        for vertex, e in TemporalIterator(v_start):
+        vertices = list(TemporalIterator(v_start))
+        vertices_to_plot = vertices[:-150] if len(vertices) > 10 else vertices
+
+        for vertex, e in vertices_to_plot:
 
             new_points, map_ptr = extract_map_from_vertex(test_graph, vertex)
-            #print(map_ptr)
-            #print(new_points.shape)
 
             robot_position = vertex.T_v_w.r_ba_ina().reshape((3,) )
             print('robot position = ', robot_position)
+            robot_pose = vertex.T_v_w.matrix()
+            print('robot_pose = ', vertex.T_v_w.matrix())
 
             x.append(vertex.T_v_w.r_ba_ina()[0]) 
             y.append(vertex.T_v_w.r_ba_ina()[1])
@@ -95,3 +89,6 @@ if __name__ == '__main__':
             while time.time() - t < 0.1 or paused:
                 vis.poll_events()
                 vis.update_renderer()
+
+    vis.run()
+    vis.destroy_window()

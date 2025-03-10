@@ -1,7 +1,7 @@
 import os
 import csv
 import numpy as np
-from pylgmath import se3op # USE VEC2TRAN AND TRANVEC 
+from pylgmath import se3op
 import argparse
 import vtr_pose_graph.graph_utils as g_utils
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
@@ -10,7 +10,6 @@ from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 
 def export_relative_transforms(graph_path, output_path):
-    # Check if output_path is a directory and append default filenames
     if os.path.isdir(output_path):
         output_path_mat = os.path.join(output_path, "relative_transforms_mat_test.csv")
         output_path_abs = os.path.join(output_path, "relative_transforms_test.csv")

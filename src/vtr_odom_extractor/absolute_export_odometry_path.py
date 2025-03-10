@@ -2,7 +2,7 @@ import os
 import csv
 import numpy as np
 import argparse
-from pylgmath import se3op # USE VEC2TRAN AND TRANVEC 
+from pylgmath import se3op 
 import vtr_pose_graph.graph_utils as g_utils
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
 from vtr_pose_graph.graph_iterators import PriviledgedIterator
@@ -10,7 +10,6 @@ from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 
 def export_absolute_transforms(graph_path, output_path):
-    # Check if output_path is a directory and append default filenames
     if os.path.isdir(output_path):
         output_path_mat = os.path.join(output_path, "absolute_transforms_mat_test.csv")
         output_path_abs = os.path.join(output_path, "absolute_transforms_test.csv")
@@ -26,7 +25,7 @@ def export_absolute_transforms(graph_path, output_path):
     print(f"Graph {graph} has {graph.number_of_vertices} vertices and {graph.number_of_edges} edges")
 
     # Set world frame
-    g_utils.set_world_frame(graph, graph.root) # maybe something fishy going on with set_world_frame
+    g_utils.set_world_frame(graph, graph.root) 
 
     # Initialize iterator
     v_start = graph.root

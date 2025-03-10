@@ -35,7 +35,10 @@ if __name__ == '__main__':
     z = []
     t = []
 
-    for v, e in PriviledgedIterator(v_start):
+    vertices = list(PriviledgedIterator(v_start))
+    for i, (v, e) in enumerate(vertices):
+        if i < 15 or i >= len(vertices) - 15:
+            continue
         x.append(v.T_v_w.r_ba_ina()[0])
         y.append(v.T_v_w.r_ba_ina()[1])
         z.append(v.T_v_w.r_ba_ina()[2])
@@ -58,7 +61,10 @@ if __name__ == '__main__':
     dist = []
     path_len = 0
 
-    for v, e in TemporalIterator(v_start):
+    vertices = list(TemporalIterator(v_start))
+    for i, (v, e) in enumerate(vertices):
+        if i < 50 or i >= len(vertices) - 50:
+            continue
         x.append(v.T_v_w.r_ba_ina()[0])
         y.append(v.T_v_w.r_ba_ina()[1])
         z.append(v.T_v_w.r_ba_ina()[2])
@@ -66,14 +72,14 @@ if __name__ == '__main__':
         dist.append(vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
         path_len += np.linalg.norm(e.T.r_ba_ina())
     
-
+    max_error = max(abs(v) for v in dist)
 
     print(f"Path {args.run} was {path_len:.3f}m long")
     if len(t) > 2:
         c = [abs(v) for v in dist]
 
         plt.figure(0)
-        plt.scatter(x, y, label=f"Repeat {args.run}", c=c)
+        plt.scatter(x, y, label=f"Repeat {args.run} (Max Error: {max_error:.3f}m)", c=c)
         plt.axis('equal')
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
@@ -82,7 +88,7 @@ if __name__ == '__main__':
 
         plt.figure(1)
         plt.title("Elevation of Path")
-        plt.scatter(x, z, label=f"Repeat {args.run}", c=c)
+        plt.scatter(x, z, label=f"Repeat {args.run} (Max Error: {max_error:.3f}m)", c=c)
         plt.xlabel('x (m)')
         plt.ylabel('z (m)')
         plt.colorbar(label="Lateral Error (m)")
@@ -92,11 +98,10 @@ if __name__ == '__main__':
         plt.figure(2)
         rmse = np.sqrt(np.trapz(np.array(dist)**2, t) / (t[-1] - t[0]))
 
-        plt.plot(t, dist, label=f"RMSE: {rmse:.3f}m for Repeat {args.run}")
+        plt.plot(t, dist, label=f"RMSE: {rmse:.3f}m, Max Error: {max_error:.3f}m for Repeat {args.run}")
         plt.legend()
         plt.ylabel("Path Tracking Error (m)")
         plt.xlabel("Time (s)")
         plt.title("Path Tracking Error")
 
         plt.show()
-
