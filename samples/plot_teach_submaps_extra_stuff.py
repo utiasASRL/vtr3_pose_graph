@@ -12,13 +12,12 @@ from vtr_pose_graph.graph_iterators import TemporalIterator, PriviledgedIterator
 import vtr_pose_graph.graph_utils as g_utils
 
 sys.path.append('/home/desiree/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/src')
-
+### THIS VERSION OF PLOT_TEACH_SUBMAPS INCLUDES CREATING AN AGGRAGATED POINT CLOUD AT THE END WITH THE PATH OVERLAYED ###
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog = 'Plot Point Clouds Path',
                             description = 'Plots point clouds')
     parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"), help="The filepath to the pose graph folder. (Usually /a/path/graph)")      # option that takes a value
-    parser.add_argument('-f', '--filter', type=int, nargs="*", help="Select only some of the repeat runs. Default plots all runs.")
     args = parser.parse_args()
 
     factory = Rosbag2GraphFactory(args.graph)
@@ -54,13 +53,11 @@ if __name__ == '__main__':
         v_start = test_graph.get_vertex((i, 0))
         paused = True
         vertices = list(TemporalIterator(v_start))
-        vertices_to_plot = vertices[:-150] if len(vertices) > 10 else vertices
+        vertices_to_plot = vertices[:-10] if len(vertices) > 10 else vertices
 
         for vertex, e in vertices_to_plot:
 
             new_points, map_ptr = extract_map_from_vertex(test_graph, vertex)
-            #print(map_ptr)
-            #print(new_points.shape)
 
             robot_position = vertex.T_v_w.r_ba_ina().reshape((3,) )
             print('robot position = ', robot_position)
@@ -100,7 +97,7 @@ if __name__ == '__main__':
     for i in range(test_graph.major_id + 1):
         v_start = test_graph.get_vertex((i, 0))
         vertices = list(TemporalIterator(v_start))
-        vertices_to_plot = vertices[:-150] if len(vertices) > 10 else vertices
+        vertices_to_plot = vertices[:-10] if len(vertices) > 10 else vertices
         vertex_count = 0
         for vertex, e in vertices_to_plot:
             robot_position = vertex.T_v_w.r_ba_ina().reshape((3,))
@@ -146,9 +143,9 @@ if __name__ == '__main__':
     vis.destroy_window()
 
     # Save the visualized blue point cloud and path to the specified directory
-    output_dir = '/home/desiree/ASRL/vtr3/finalUsedPoseGraphs/dome/pointcloudvideo'
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    #output_dir = '/home/desiree/ASRL/vtr3/finalUsedPoseGraphs/dome/pointcloudvideo'
+    #if not os.path.exists(output_dir):
+    #    os.makedirs(output_dir)
 
     # Combine path line set and submap point clouds into one point cloud
     combined_pcd = o3d.geometry.PointCloud()
@@ -173,7 +170,7 @@ if __name__ == '__main__':
     combined_pcd.colors = o3d.utility.Vector3dVector(np.vstack(combined_colors))
 
     # Save the combined point cloud
-    combined_pcd_path = os.path.join(output_dir, 'combined_point_cloud.ply')
-    o3d.io.write_point_cloud(combined_pcd_path, combined_pcd)
+    #combined_pcd_path = os.path.join(output_dir, 'combined_point_cloud.ply')
+    #o3d.io.write_point_cloud(combined_pcd_path, combined_pcd)
 
-    print(f"Saved combined point cloud to {combined_pcd_path}")
+    #print(f"Saved combined point cloud to {combined_pcd_path}")

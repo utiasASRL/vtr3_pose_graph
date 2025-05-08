@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     vertices = list(PriviledgedIterator(v_start))
     for i, (v, e) in enumerate(vertices):
-        if i < 15 or i >= len(vertices) - 15:
+        if i < 15 or i >= len(vertices) - 15: # CHANGE TO TRIM PATH
             continue
         x.append(v.T_v_w.r_ba_ina()[0])
         y.append(v.T_v_w.r_ba_ina()[1])
@@ -50,7 +50,6 @@ if __name__ == '__main__':
 
     plt.figure(1)
     plt.scatter(x, z, label="Teach")
-
     
     v_start = test_graph.get_vertex((args.run,0))
 

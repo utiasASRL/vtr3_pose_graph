@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
-from vtr_pose_graph.graph_iterators import PriviledgedIterator
+from vtr_pose_graph.graph_iterators import PriviledgedIterator, TemporalIterator
 import vtr_pose_graph.graph_utils as g_utils
 import vtr_regression_testing.path_comparison as vtr_path
 import argparse
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     y = []
     t = []
 
-    for v, e in PriviledgedIterator(v_start):
+    for v, e in TemporalIterator(v_start, to_goal=False): #####WAS PRIVILEDGED ITERATOR - CHANGING TO CHECK IF LOOP CLOSURE WORKED
         x.append(v.T_v_w.r_ba_ina()[0])
         y.append(v.T_v_w.r_ba_ina()[1])
         t.append(v.stamp / 1e9)

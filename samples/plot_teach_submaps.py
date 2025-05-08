@@ -18,7 +18,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog = 'Plot Point Clouds Path',
                             description = 'Plots point clouds')
     parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"), help="The filepath to the pose graph folder. (Usually /a/path/graph)")      # option that takes a value
-    parser.add_argument('-f', '--filter', type=int, nargs="*", help="Select only some of the repeat runs. Default plots all runs.")
     args = parser.parse_args()
 
     factory = Rosbag2GraphFactory(args.graph)
@@ -54,7 +53,7 @@ if __name__ == '__main__':
         v_start = test_graph.get_vertex((i, 0))
         paused = True
         vertices = list(TemporalIterator(v_start))
-        vertices_to_plot = vertices[:-150] if len(vertices) > 10 else vertices
+        vertices_to_plot = vertices[:-10] if len(vertices) > 10 else vertices
 
         for vertex, e in vertices_to_plot:
 
