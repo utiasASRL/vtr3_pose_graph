@@ -11,5 +11,6 @@ src/vtr_utils/__pycache__
 src/vtr3_pyposegraph.egg-info
 src/vtr3_pyposegraph.egg-info
 src/vtr3_pyposegraph.egg-info
+src/vtr_gps_plotting
 *.db3
 build
