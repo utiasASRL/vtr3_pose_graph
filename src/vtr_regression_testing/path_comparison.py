@@ -16,7 +16,6 @@ def path_to_matrix(graph: Graph, path: GraphIterator):
     points = np.zeros((0, 7))
     for v, e in path:
         if e.from_id == INVALID_ID or e.to_id == INVALID_ID:
-            print("Invalid edge")
             continue
         x0 = graph.get_vertex(e.from_id).T_v_w.r_ba_ina()
         x1 = graph.get_vertex(e.to_id).T_v_w.r_ba_ina()
@@ -80,7 +79,8 @@ def signed_distance_to_path(point: np.ndarray, path: np.ndarray):
     dists = np.linalg.norm((points - x0), axis=1)
     min_dist = np.min(dists)
 
-    proj = np.diagonal(np.dot(points - x0, tangent.T))
+    #proj = np.diagonal(np.dot(points - x0, tangent.T))
+    proj = np.sum((points - x0) * tangent, axis=1)    
     segment_filter = (proj > 0) & (proj < l)
 
     min_proj = 1e6
@@ -125,4 +125,3 @@ def distances_to_path(points: np.ndarray, path: np.ndarray):
         min_proj = np.min(masked_norms, axis=0)
     
     return np.min(np.vstack([min_proj, min_dist]), axis=0).filled(0)
-

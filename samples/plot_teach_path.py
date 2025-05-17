@@ -32,7 +32,11 @@ if __name__ == '__main__':
     y = []
     t = []
 
-    for v, e in TemporalIterator(v_start, to_goal=False): #####WAS PRIVILEDGED ITERATOR - CHANGING TO CHECK IF LOOP CLOSURE WORKED
+    # for v, e in TemporalIterator(v_start, to_goal=False): #####WAS PRIVILEDGED ITERATOR - CHANGING TO CHECK IF LOOP CLOSURE WORKED
+    #     x.append(v.T_v_w.r_ba_ina()[0])
+    #     y.append(v.T_v_w.r_ba_ina()[1])
+    #     t.append(v.stamp / 1e9)
+    for v, e in PriviledgedIterator(v_start):
         x.append(v.T_v_w.r_ba_ina()[0])
         y.append(v.T_v_w.r_ba_ina()[1])
         t.append(v.stamp / 1e9)

@@ -13,8 +13,8 @@ from vtr_utils.plot_utils import extract_map_from_vertex
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-                        prog='Plot Repeat Path',
-                        description='Plots scatter of points to show path. Also calculates RMS error')
+                        prog='Plot Teach and Repeat Submaps',
+                        description='Plots submaps from teach and repeat overlaid. Also calculates RMS error')
     parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"), help="Path to the pose graph folder")
     parser.add_argument('-r', '--run', type=int, help="Select a repeat run.")
     args = parser.parse_args()
