@@ -35,10 +35,29 @@ if __name__ == '__main__':
     y = []
     t = []
 
-    for v, e in PriviledgedIterator(v_start):
+
+    # Number of initial vertices to exclude
+    exclude_n_teach = int(os.getenv("EXCLUDE_VERTICES", 5))
+    # Number of final vertices to exclude from the teach path
+    exclude_n_teach_end = int(os.getenv("EXCLUDE_VERTICES_END", 2))
+    # Skip the first exclude_n_teach and last exclude_n_teach_end vertices in the teach path
+    teach_iter = list(TemporalIterator(v_start))[exclude_n_teach:]
+    if exclude_n_teach_end > 0:
+        teach_iter = teach_iter[:-exclude_n_teach_end]
+
+    # Skip the first exclude_n vertices in the repeat path
+    #teach_iter = list(TemporalIterator(v_start))[exclude_n_teach:]
+
+    for v, e in teach_iter:
         x.append(v.T_v_w.r_ba_ina()[0])
         y.append(v.T_v_w.r_ba_ina()[1])
         t.append(v.stamp / 1e9)
+
+
+    # for v, e in PriviledgedIterator(v_start):
+    #     x.append(v.T_v_w.r_ba_ina()[0])
+    #     y.append(v.T_v_w.r_ba_ina()[1])
+    #     t.append(v.stamp / 1e9)
 
     plt.figure(0)
     plt.scatter(x, y, label="Teach")
@@ -58,10 +77,22 @@ if __name__ == '__main__':
         dist = []
         path_len = 0
 
-        for v, e in TemporalIterator(v_start):
+        # Number of initial vertices to exclude
+        exclude_n_repeat = int(os.getenv("EXCLUDE_VERTICES", 5))
+
+        # Skip the first exclude_n vertices in the repeat path
+        repeat_iter = list(TemporalIterator(v_start))[exclude_n_repeat:]
+
+        for v, e in repeat_iter:
             x.append(v.T_v_w.r_ba_ina()[0])
             y.append(v.T_v_w.r_ba_ina()[1])
             t.append(v.stamp / 1e9)
+
+        # for v, e in TemporalIterator(v_start):
+        #     x.append(v.T_v_w.r_ba_ina()[0])
+        #     y.append(v.T_v_w.r_ba_ina()[1])
+        #     t.append(v.stamp / 1e9)
+            
             dist.append(vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
             path_len += np.linalg.norm(e.T.r_ba_ina())
         

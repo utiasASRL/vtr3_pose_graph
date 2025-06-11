@@ -59,6 +59,9 @@ if __name__ == '__main__':
 
             new_points, map_ptr = extract_map_from_vertex(test_graph, vertex)
 
+            num_points = new_points.shape[1]
+            print(f'Number of points: {num_points}')
+
             robot_position = vertex.T_v_w.r_ba_ina().reshape((3,) )
             print('robot position = ', robot_position)
             robot_pose = vertex.T_v_w.matrix()
