@@ -88,8 +88,8 @@ def signed_distance_to_path(point: np.ndarray, path: np.ndarray):
     if np.sum(segment_filter) > 0:
         idx_min_proj = np.argmin(norm_dist[segment_filter])
         if norm_dist[segment_filter][idx_min_proj] < min_dist:
-            return np.sign(norm_vec[segment_filter][idx_min_proj, 2]) * norm_dist[segment_filter][idx_min_proj]
-    return min_dist
+            return -np.sign(norm_vec[segment_filter][idx_min_proj, 2]) * norm_dist[segment_filter][idx_min_proj]
+    return -min_dist
 
 def distances_to_path(points: np.ndarray, path: np.ndarray):
     """Path is assumed to be formatted from path_to_matrix"""
