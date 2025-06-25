@@ -14,7 +14,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                         prog = 'Plot Repeat Path',
                         description = 'Plots scatter of points to show path. Also calculates RMS error')
-    parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"), help="The filepath to the pose graph folder. (Usually /a/path/graph)")
+    parser.add_argument('graph', help="The filepath to the pose graph folder. (Usually /a/path/graph)")
     parser.add_argument('-f', '--filter', type=int, nargs="*", help="Select only some of the repeat runs. Default plots all runs.")
     args = parser.parse_args()
 
@@ -34,6 +34,7 @@ if __name__ == '__main__':
     x = []
     y = []
     t = []
+    auto_path_len = 0
 
     for v, e in PriviledgedIterator(v_start):
         x.append(v.T_v_w.r_ba_ina()[0])
@@ -66,8 +67,12 @@ if __name__ == '__main__':
             path_len += np.linalg.norm(e.T.r_ba_ina())
         
         print(f"Path {i+1} was {path_len:.3f}m long with {len(x)} vertices")
+        print(f"Path {i+1} took {t[-1] - t[0]:.1f}s to complete")
         if len(t) < 2 or v.taught:
             continue
+        auto_path_len += path_len
+
+
 
         plt.figure(0)
         plt.scatter(x, y, label=f"Repeat {i+1}")
@@ -116,5 +121,6 @@ if __name__ == '__main__':
         plt.legend()
         plt.ylabel("Acceleration (m/s^2)")
         plt.xlabel("Time (s)")
+    print(f"Total repeat distance {auto_path_len:.2f} m")
     plt.show()
 

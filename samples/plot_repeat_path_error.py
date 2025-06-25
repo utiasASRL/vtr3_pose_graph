@@ -14,8 +14,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                         prog = 'Plot Repeat Path',
                         description = 'Plots scatter of points to show path. Also calculates RMS error')
-    parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"), help="The filepath to the pose graph folder. (Usually /a/path/graph)")
-    parser.add_argument('-r', '--run', type=int, help="Select a repeat runs.")
+    parser.add_argument('graph', help="The filepath to the pose graph folder. (Usually /a/path/graph)")
+    parser.add_argument('-r', '--run', type=int, help="Select a repeat run.")
     args = parser.parse_args()
 
     offline_graph_dir = args.graph
@@ -42,8 +42,9 @@ if __name__ == '__main__':
         t.append(v.stamp / 1e9)
 
     plt.figure(0)
-    plt.scatter(x, y, label="Teach")
+    plt.scatter(x, y, label="Teach", c='#D86900')
     plt.axis('equal')
+    plt.grid()
 
     plt.figure(1)
     plt.scatter(x, z, label="Teach")
