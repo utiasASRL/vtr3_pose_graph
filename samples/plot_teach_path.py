@@ -30,33 +30,38 @@ if __name__ == '__main__':
 
     path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start))
 
-    x = []
-    y = []
-    xg = []
-    yg = []
-    r = []
-    p = []
-    h = []
+    pose_vec = np.zeros((6, 0))
     t = []
 
     for v, e in PriviledgedIterator(v_start):
-        x.append(v.T_v_w.r_ba_ina()[0])
-        y.append(v.T_v_w.r_ba_ina()[1])
-        orientation = so3op.rot2vec(v.T_w_v.C_ba()) * 180/np.pi
-        r.append(orientation[0])
-        p.append(orientation[1])
-        h.append(orientation[2])
+        pose_vec = np.hstack((pose_vec, np.vstack((v.T_v_w.r_ba_ina(), so3op.rot2vec(v.T_w_v.C_ba()) * 180/np.pi))))
         t.append(v.stamp / 1e9)
+    t = np.array(t)
+    t_sort = np.argsort(t)
+    t = t[t_sort]
+    pose_vec = pose_vec[:, t_sort]
 
     plt.figure(0)
-    plt.plot(x, y, label="Teach", linewidth=5)
+    plt.plot(pose_vec[0], pose_vec[1], label="Teach", linewidth=5)
     plt.axis('equal')
     plt.legend()
 
     plt.figure(1)
-    plt.plot(t, r, label="Roll")
-    plt.plot(t, p, label="Pitch")
-    plt.plot(t, h, label="Yaw")
+    plt.plot(t, pose_vec[3], label="Roll")
+    plt.plot(t, pose_vec[4], label="Pitch")
+    plt.plot(t, pose_vec[5], label="Yaw")
+    plt.title("Orientation")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Angle ($^\circ$)")
+    plt.legend()
+
+    plt.figure(2)
+    plt.plot(t, pose_vec[0], label="X")
+    plt.plot(t, pose_vec[1], label="Y")
+    plt.plot(t, pose_vec[2], label="Z")
+    plt.title("Position")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Position (m)")
     plt.legend()
 
     plt.show()
