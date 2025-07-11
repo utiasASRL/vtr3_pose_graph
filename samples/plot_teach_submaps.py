@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 from sensor_msgs_py.point_cloud2 import read_points
 import open3d as o3d
 import sys
-from vtr_utils.plot_utils import extract_map_from_vertex
+from vtr_utils.plot_utils import extract_map_from_vertex, extract_points_from_vertex, convert_points_to_frame
 import argparse
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
 from vtr_pose_graph.graph_iterators import TemporalIterator, PriviledgedIterator, SpatialIterator
 import vtr_pose_graph.graph_utils as g_utils
+from pylgmath import Transformation
 
 sys.path.append('/home/desiree/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/src')
 
@@ -57,7 +58,17 @@ if __name__ == '__main__':
 
         for vertex, e in vertices_to_plot:
 
-            new_points, map_ptr = extract_map_from_vertex(test_graph, vertex)
+            ############### which to extract froma submap or raw scan point cloud ##################
+            # new_points = extract_points_from_vertex(vertex, msg="raw_point_cloud") # raw scan point cloud stored in vertex
+            
+            # map_ptr = vertex.get_data("pointmap_ptr")
+            # T_map_v = Transformation(xi_ab=np.array(map_ptr.t_v_this_map.xi).reshape(6, 1))
+
+            # relative_transform = vertex.T_w_v * T_map_v 
+            # new_points = convert_points_to_frame(new_points, relative_transform)
+
+            new_points, T_map_v = extract_map_from_vertex(test_graph, vertex) #sliding window accumulation of points stored in supmap
+            #########################################################################################
 
             num_points = new_points.shape[1]
             print(f'Number of points: {num_points}')
@@ -71,7 +82,7 @@ if __name__ == '__main__':
             y.append(vertex.T_v_w.r_ba_ina()[1])
 
             pcd.points = o3d.utility.Vector3dVector(new_points.T)
-            if np.allclose(map_ptr.matrix(), np.eye(4)):
+            if np.allclose(T_map_v.matrix(), np.eye(4)): #map_ptr if extracting sliding window accumulation of points, T_map_v if extracting raw scan point cloud
                 pcd.paint_uniform_color((1.0, 0.0, 0.0))  # Red color for identity matrix
             else:
                 pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
@@ -94,3 +105,5 @@ if __name__ == '__main__':
 
     vis.run()
     vis.destroy_window()
+
+# FILTERED POINT CLOUD SCAN SHOULD BE THE RAW POINT CLOUD
