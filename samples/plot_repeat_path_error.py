@@ -126,7 +126,7 @@ if __name__ == '__main__':
                         prog = 'Plot Repeat Path',
                         description = 'Plots scatter of points to show path. Also calculates RMS error')
     parser.add_argument('graph', help="The filepath to the pose graph folder. (Usually /a/path/graph)")
-    parser.add_argument('-r', '--run', type=int, help="Select a repeat run.")
+    parser.add_argument('-r', '--run', type=int, required=True, help="Select a repeat run.")
     args = parser.parse_args()
 
     offline_graph_dir = args.graph

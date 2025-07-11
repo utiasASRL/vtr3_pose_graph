@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
         for vertex, e in vertices_to_plot:
 
-            ############### which to extract froma submap or raw scan point cloud ##################
+            ############### which to extract from a vertex, submap or raw scan point cloud? ##################
             # new_points = extract_points_from_vertex(vertex, msg="raw_point_cloud") # raw scan point cloud stored in vertex
             
             # map_ptr = vertex.get_data("pointmap_ptr")
@@ -82,7 +82,7 @@ if __name__ == '__main__':
             y.append(vertex.T_v_w.r_ba_ina()[1])
 
             pcd.points = o3d.utility.Vector3dVector(new_points.T)
-            if np.allclose(T_map_v.matrix(), np.eye(4)): #map_ptr if extracting sliding window accumulation of points, T_map_v if extracting raw scan point cloud
+            if np.allclose(T_map_v.matrix(), np.eye(4)):
                 pcd.paint_uniform_color((1.0, 0.0, 0.0))  # Red color for identity matrix
             else:
                 pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
