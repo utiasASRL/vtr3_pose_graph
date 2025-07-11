@@ -9,6 +9,28 @@ from vtr_pose_graph.graph_iterators import PriviledgedIterator
 from scipy.spatial.transform import Rotation as R
 import matplotlib.pyplot as plt
 
+def plot_odometry_path(positions):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot(positions[:, 0], positions[:, 1], positions[:, 2], label='Odometry Path')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    
+    max_range = np.array([positions[:,0].max()-positions[:,0].min(), 
+                          positions[:,1].max()-positions[:,1].min(), 
+                          positions[:,2].max()-positions[:,2].min()]).max()
+    mid_x = (positions[:,0].max()+positions[:,0].min()) * 0.5
+    mid_y = (positions[:,1].max()+positions[:,1].min()) * 0.5
+    mid_z = (positions[:,2].max()+positions[:,2].min()) * 0.5
+    ax.set_xlim(mid_x - max_range/2, mid_x + max_range/2)
+    ax.set_ylim(mid_y - max_range/2, mid_y + max_range/2)
+    ax.set_zlim(mid_z - max_range/2, mid_z + max_range/2)
+
+    ax.legend()
+    plt.title('Odometry Path')
+    plt.show()
+
 def export_relative_transforms(graph_path, output_path):
     if os.path.isdir(output_path):
         output_path_mat = os.path.join(output_path, "relative_transforms_mat_test.csv")
@@ -122,15 +144,7 @@ def export_relative_transforms(graph_path, output_path):
     actual_positions = np.array(actual_positions)
 
     # Plot the path
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot(actual_positions[:, 0], actual_positions[:, 1], actual_positions[:, 2], label='Odometry Path')
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    ax.legend()
-    plt.title('Odometry Path')
-    plt.show()
+    plot_odometry_path(actual_positions)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Export odometry path from pose graph.")

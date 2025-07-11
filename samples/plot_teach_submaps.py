@@ -17,8 +17,16 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(prog = 'Plot Point Clouds Path',
                             description = 'Plots point clouds')
-    parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"), help="The filepath to the pose graph folder. (Usually /a/path/graph)")      # option that takes a value
+    parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"), help="The filepath to the pose graph folder. (Usually /a/path/graph)")
+    parser.add_argument('--save_pc', type=lambda x: (str(x).lower() == 'true'), default=False, help="Whether to save point clouds (True/False).")
+    parser.add_argument('--save_dir', type=str, default=None, help="Directory to save point clouds (required if --save_pc is True).")
     args = parser.parse_args()
+
+    if args.save_pc and not args.save_dir:
+        parser.error("--save_dir must be specified if --save_pc is True.")
+
+    if args.save_pc and not os.path.exists(args.save_dir):
+        os.makedirs(args.save_dir)
 
     factory = Rosbag2GraphFactory(args.graph)
 
@@ -32,7 +40,6 @@ if __name__ == '__main__':
     y = []
     live_2_map = []
     map_2_live = []
-
 
     first = True
     paused = False
@@ -49,13 +56,18 @@ if __name__ == '__main__':
     vis.poll_events()
     vis.update_renderer()
 
+    cloud_count = 0
+
     for i in range(test_graph.major_id + 1):
         v_start = test_graph.get_vertex((i, 0))
         paused = True
         vertices = list(TemporalIterator(v_start))
         vertices_to_plot = vertices[:-10] if len(vertices) > 10 else vertices
 
-        for vertex, e in vertices_to_plot:
+        # Accumulate all points for this major_id
+        accumulated_points = []
+
+        for idx, (vertex, e) in enumerate(vertices_to_plot):
 
             new_points, map_ptr = extract_map_from_vertex(test_graph, vertex)
 
@@ -76,6 +88,18 @@ if __name__ == '__main__':
             else:
                 pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
 
+            # Save every 20th point cloud if requested
+            if args.save_pc and (cloud_count % 20 == 0):
+                filename = os.path.join(args.save_dir, f"cloud_{cloud_count:05d}.ply")
+                o3d.io.write_point_cloud(filename, pcd)
+                print(f"Saved point cloud to {filename}")
+
+            # Accumulate all points for this major_id
+            if args.save_pc:
+                accumulated_points.append(new_points.T)
+
+            cloud_count += 1
+
             # Create coordinate frame for the vertex
             frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=robot_position)
 
@@ -91,6 +115,17 @@ if __name__ == '__main__':
             while time.time() - t < 0.1 or paused:
                 vis.poll_events()
                 vis.update_renderer()
+
+        # Save accumulated point cloud for this major_id
+        if args.save_pc and accumulated_points:
+            all_points = np.vstack(accumulated_points)
+            acc_pcd = o3d.geometry.PointCloud()
+            acc_pcd.points = o3d.utility.Vector3dVector(all_points)
+            acc_filename = os.path.join(args.save_dir, f"accumulated_major_{i:03d}.ply")
+            o3d.io.write_point_cloud(acc_filename, acc_pcd)
+            print(f"Saved accumulated point cloud for major_id {i} to {acc_filename}")
+
+    print("Finished processing all point clouds.")
 
     vis.run()
     vis.destroy_window()
