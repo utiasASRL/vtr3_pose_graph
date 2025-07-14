@@ -17,6 +17,7 @@ if __name__ == '__main__':
                         description = 'Plots scatter of points to show path. Also calculates RMS error')
     parser.add_argument('graph', help="The filepath to the pose graph folder. (Usually /a/path/graph)")
     parser.add_argument('-f', '--filter', type=int, nargs="*", help="Select only some of the repeat runs. Default plots all runs.")
+    parser.add_argument('-l', '--last', type=int, help="Plot only the last N repeats (overrides filter if set)") 
     args = parser.parse_args()
 
     offline_graph_dir = args.graph
@@ -58,6 +59,11 @@ if __name__ == '__main__':
     plt.axis('equal')
 
     if args.filter is None:
+        args.filter = [i+1 for i in range(test_graph.major_id)]
+    
+    if args.last is not None:
+        args.filter = list(range(test_graph.major_id - args.last + 1, test_graph.major_id + 1))
+    elif args.filter is None:
         args.filter = [i+1 for i in range(test_graph.major_id)]
 
     for i in range(test_graph.major_id):
@@ -129,7 +135,7 @@ if __name__ == '__main__':
         plt.ylabel("Position (m)")
         plt.legend()
         
-        print(f"Path {i+1} was {path_len:.3f}m long with {len(x)} vertices")
+        #print(f"Path {i+1} was {path_len:.3f}m long with {len(x)} vertices")
         print(f"Path {i+1} took {t[-1] - t[0]:.1f}s to complete")
 
         auto_path_len += path_len
