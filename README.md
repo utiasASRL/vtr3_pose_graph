@@ -21,5 +21,5 @@ pip3 install -e .
 To run the samples, after installing
 ```bash
 source $VTRSRC/main/install/setup.bash #For ROS2 and VTR message types
-python3 samples/plot_repeat_path.py -g /path/to/graph
+python3 samples/plot_repeat_path.py /path/to/graph
 ```
