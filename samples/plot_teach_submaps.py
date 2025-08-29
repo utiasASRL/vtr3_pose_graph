@@ -18,15 +18,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog = 'Plot Point Clouds Path',
                             description = 'Plots point clouds')
     parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"), help="The filepath to the pose graph folder. (Usually /a/path/graph)")
-    parser.add_argument('--save_pc', type=lambda x: (str(x).lower() == 'true'), default=False, help="Whether to save point clouds (True/False).")
-    parser.add_argument('--save_dir', type=str, default=None, help="Directory to save point clouds (required if --save_pc is True).")
+    parser.add_argument('--save_pc', type=lambda x: (str(x).lower() == 'true'), default=False, help="Whether to save the accumulated point cloud (True/False).")
+    parser.add_argument('--save_path', type=str, default="accumulated_cloud.ply", help="Path to save the accumulated point cloud (PLY format).")
     args = parser.parse_args()
-
-    if args.save_pc and not args.save_dir:
-        parser.error("--save_dir must be specified if --save_pc is True.")
-
-    if args.save_pc and not os.path.exists(args.save_dir):
-        os.makedirs(args.save_dir)
 
     factory = Rosbag2GraphFactory(args.graph)
 
@@ -40,6 +34,10 @@ if __name__ == '__main__':
     y = []
     live_2_map = []
     map_2_live = []
+
+    # For saving point clouds and poses
+    all_points = []  # List of np.arrays (N,3)
+    all_poses = []   # List of pose matrices (4x4)
 
     first = True
     paused = False
@@ -56,16 +54,13 @@ if __name__ == '__main__':
     vis.poll_events()
     vis.update_renderer()
 
-    cloud_count = 0
+    #cloud_count = 0
 
     for i in range(test_graph.major_id + 1):
         v_start = test_graph.get_vertex((i, 0))
         paused = True
         vertices = list(TemporalIterator(v_start))
         vertices_to_plot = vertices[:-10] if len(vertices) > 10 else vertices
-
-        # Accumulate all points for this major_id
-        accumulated_points = []
 
         for idx, (vertex, e) in enumerate(vertices_to_plot):
 
@@ -82,24 +77,15 @@ if __name__ == '__main__':
             x.append(vertex.T_v_w.r_ba_ina()[0]) 
             y.append(vertex.T_v_w.r_ba_ina()[1])
 
+            all_points.append(new_points.T)
+            all_poses.append(robot_pose)
+            print('Shape is', new_points.T.shape)
+
             pcd.points = o3d.utility.Vector3dVector(new_points.T)
             if np.allclose(map_ptr.matrix(), np.eye(4)):
                 pcd.paint_uniform_color((1.0, 0.0, 0.0))  # Red color for identity matrix
             else:
                 pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
-
-            # Save every 20th point cloud if requested
-            if args.save_pc and (cloud_count % 20 == 0):
-                filename = os.path.join(args.save_dir, f"cloud_{cloud_count:05d}.ply")
-                o3d.io.write_point_cloud(filename, pcd)
-                print(f"Saved point cloud to {filename}")
-
-            # Accumulate all points for this major_id
-            if args.save_pc:
-                accumulated_points.append(new_points.T)
-
-            cloud_count += 1
-
             # Create coordinate frame for the vertex
             frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=robot_position)
 
@@ -116,16 +102,41 @@ if __name__ == '__main__':
                 vis.poll_events()
                 vis.update_renderer()
 
-        # Save accumulated point cloud for this major_id
-        if args.save_pc and accumulated_points:
-            all_points = np.vstack(accumulated_points)
-            acc_pcd = o3d.geometry.PointCloud()
-            acc_pcd.points = o3d.utility.Vector3dVector(all_points)
-            acc_filename = os.path.join(args.save_dir, f"accumulated_major_{i:03d}.ply")
-            o3d.io.write_point_cloud(acc_filename, acc_pcd)
-            print(f"Saved accumulated point cloud for major_id {i} to {acc_filename}")
-
     print("Finished processing all point clouds.")
 
     vis.run()
     vis.destroy_window()
+
+    # # Save all accumulated points as a single point cloud in PLY format if requested
+    # if args.save_pc and len(all_points) > 0:
+    #     accumulated_points = np.vstack(all_points)
+    #     acc_pcd = o3d.geometry.PointCloud()
+    #     acc_pcd.points = o3d.utility.Vector3dVector(accumulated_points)
+    #     o3d.io.write_point_cloud(args.save_path, acc_pcd)
+    #     print(f"Saved accumulated point cloud to {args.save_path}")
+
+    #     # Also save all point clouds into a single .bin file and poses into a CSV file
+    #     import struct
+    #     import csv
+    #     bin_filename = "all_pointclouds.bin"
+    #     csv_filename = "all_poses.csv"
+    #     with open(bin_filename, "wb") as fbin, open(csv_filename, "w", newline="") as fcsv:
+    #         csv_writer = csv.writer(fcsv)
+    #         csv_writer.writerow(["cloud_index", "pose_00", "pose_01", "pose_02", "pose_03",
+    #                              "pose_10", "pose_11", "pose_12", "pose_13",
+    #                              "pose_20", "pose_21", "pose_22", "pose_23",
+    #                              "pose_30", "pose_31", "pose_32", "pose_33",
+    #                              "num_points", "offset_in_bin"])
+    #         offset = 0
+    #         for idx, (pts, pose) in enumerate(zip(all_points, all_poses)):
+    #             num_points = pts.shape[0]
+    #             # Write number of points (int)
+    #             fbin.write(struct.pack('I', num_points))
+    #             # Write all points (float32)
+    #             fbin.write(pts.astype(np.float32).tobytes())
+    #             # Write pose and metadata to CSV
+    #             csv_writer.writerow([idx] + pose.flatten().tolist() + [num_points, offset])
+    #             # Each entry: 4 bytes for num_points + 12*num_points*4 bytes for points
+    #             offset += 4 + num_points * 3 * 4
+    #     print(f"Saved {len(all_points)} point clouds to {bin_filename} and poses to {csv_filename}")
+

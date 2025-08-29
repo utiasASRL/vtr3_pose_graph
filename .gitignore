@@ -15,3 +15,4 @@ src/vtr_gps_plotting
 *.db3
 build
 point_clouds/
+graphs/

@@ -57,9 +57,9 @@ def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     teach_v = graph.get_vertex(map_ptr.map_vid)
     T_map_v = Transformation(xi_ab=np.array(map_ptr.t_v_this_map.xi).reshape(6, 1))
 
-    raw_pc_msg = teach_v.get_data("pointmap")
+    raw_pc_msg = teach_v.get_data("filtered_point_cloud")
     map_pc = read_points(raw_pc_msg.point_cloud)
-    map_pts = extract_points_from_vertex(teach_v, msg="pointmap")
+    map_pts = extract_points_from_vertex(teach_v, msg="filtered_point_cloud")
     
     if world_frame:
         #print(v.T_w_v)
