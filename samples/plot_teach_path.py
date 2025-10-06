@@ -13,7 +13,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                         prog = 'Verify Point Cloud',
                         description = 'Plots point cloud to verify alignment')
-    parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"))      # option that takes a value
+    parser.add_argument('-g', '--graph', default=os.getenv("VTRDATA"))
     args = parser.parse_args()
 
     offline_graph_dir = args.graph
@@ -31,22 +31,25 @@ if __name__ == '__main__':
     x = []
     y = []
     t = []
+    p = []         # List to hold cumulative path lengths
+    path_len = 0.0 # Initialize path length for PrivilegedIterator
 
-    # for v, e in TemporalIterator(v_start, to_goal=False): #####WAS PRIVILEDGED ITERATOR - CHANGING TO CHECK IF LOOP CLOSURE WORKED
-    #     x.append(v.T_v_w.r_ba_ina()[0])
-    #     y.append(v.T_v_w.r_ba_ina()[1])
-    #     t.append(v.stamp / 1e9)
+    # Loop over vertices and edges using PrivilegedIterator,
+    # accumulate positions and path length iteratively.
     for v, e in PriviledgedIterator(v_start):
-        x.append(v.T_v_w.r_ba_ina()[0])
-        y.append(v.T_v_w.r_ba_ina()[1])
+        pos = v.T_v_w.r_ba_ina()
+        x.append(pos[0])
+        y.append(pos[1])
         t.append(v.stamp / 1e9)
+        # Only update path length if an edge is valid
+        if e is not None:
+            path_len += np.linalg.norm(e.T.r_ba_ina())
+        p.append(path_len)
+
+    # Print the cumulative path length computed iteratively
+    print(f"Iterative total path length using PrivilegedIterator: {path_len:.3f}")
 
     plt.figure(0)
     plt.plot(x, y, label="Teach", linewidth=5)
     plt.axis('equal')
-
     plt.show()
-
-
-#desiree@Desiree-ThinkPad-P53:~/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph$ python3 samples/plot_teach_path.py -g /home/desiree/ASRL/vtr3/data/ExistingGraph/pose_graph
-

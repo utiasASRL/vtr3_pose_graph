@@ -51,7 +51,7 @@ if __name__ == '__main__':
     for i in range(test_graph.major_id + 1):
         v_start = test_graph.get_vertex((i, 0))
         paused = True
-        vertices = list(TemporalIterator(v_start))
+        vertices = list(PriviledgedIterator(v_start))
         vertices_to_plot = vertices[:-10] if len(vertices) > 10 else vertices
 
         for vertex, e in vertices_to_plot:
@@ -95,14 +95,14 @@ if __name__ == '__main__':
 
     for i in range(test_graph.major_id + 1):
         v_start = test_graph.get_vertex((i, 0))
-        vertices = list(TemporalIterator(v_start))
+        vertices = list(PriviledgedIterator(v_start))
         vertices_to_plot = vertices[:-10] if len(vertices) > 10 else vertices
         vertex_count = 0
         for vertex, e in vertices_to_plot:
             robot_position = vertex.T_v_w.r_ba_ina().reshape((3,))
             path_points.append(robot_position)
 
-            if vertex_count % 7 == 0:  # Plot every 40 vertices
+            if vertex_count % 10 == 0:  # Plot every 40 vertices
                 new_points, map_ptr = extract_map_from_vertex(test_graph, vertex)
                 if not np.allclose(map_ptr.matrix(), np.eye(4)):
                     submap_pcd = o3d.geometry.PointCloud()

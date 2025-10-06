@@ -10,6 +10,35 @@ import vtr_pose_graph.graph_utils as g_utils
 import vtr_regression_testing.path_comparison as vtr_path
 from vtr_utils.plot_utils import extract_map_from_vertex
 
+def collect_points_with_progress(graph, vertices):
+    """Extract submap points and the normalized cumulative distance (0..1)
+    for only those vertices that actually yield a submap."""
+    points = []
+    s_vals = []
+    cum = 0.0
+    for idx, (v, e) in enumerate(vertices):
+        # advance arc length if we have an edge transform
+        if e is not None:
+            try:
+                step = np.linalg.norm(e.T.r_ba_ina())
+                if step is not None:
+                    cum += float(step)
+            except Exception:
+                pass
+
+        new_points, _ = extract_map_from_vertex(graph, v)
+        if new_points is not None and new_points.size > 0:
+            points.append(new_points)
+            s_vals.append(cum)
+
+    s_vals = np.asarray(s_vals, dtype=float)
+    if s_vals.size and s_vals[-1] > 0:
+        s_vals /= s_vals[-1]  # normalize to 0..1
+    elif s_vals.size:
+        s_vals[:] = 0.0
+    return points, s_vals
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
@@ -83,7 +112,7 @@ if __name__ == '__main__':
         plt.colorbar(label="Lateral Error (m)")
         plt.legend()
         plt.show()
-
+'''
     # Extract and visualize submaps from both teach and repeat runs
     first = True
     paused = False
@@ -102,16 +131,25 @@ if __name__ == '__main__':
     vis.poll_events()
     vis.update_renderer()
 
-    # Gather teach submaps by iterating over all teach runs
+    # # Gather teach submaps by iterating over all teach runs
+    # teach_points = []
+    # for i in range(test_graph.major_id + 1):
+    #     vertices = list(TemporalIterator(v_start_teach))
+    #     # Optionally filter out the very first/last vertices
+    #     vertices_to_plot = vertices[:-10] if len(vertices) > 10 else vertices
+    #     for v, e in vertices_to_plot:
+    #         new_points, map_ptr = extract_map_from_vertex(test_graph, v)
+    #         if new_points is not None and new_points.size > 0:
+    #             teach_points.append(new_points)
+
+    # Gather teach submaps from the privileged (teach) chain once
     teach_points = []
-    for i in range(test_graph.major_id + 1):
-        vertices = list(TemporalIterator(v_start_teach))
-        # Optionally filter out the very first/last vertices
-        vertices_to_plot = vertices[:-10] if len(vertices) > 10 else vertices
-        for v, e in vertices_to_plot:
-            new_points, map_ptr = extract_map_from_vertex(test_graph, v)
-            if new_points is not None and new_points.size > 0:
-                teach_points.append(new_points)
+    teach_vertices = list(PriviledgedIterator(v_start_teach))  # <- privileged teach path
+    teach_vertices_to_plot = teach_vertices[:-10] if len(teach_vertices) > 10 else teach_vertices
+    for v, e in teach_vertices_to_plot:
+        new_points, _ = extract_map_from_vertex(test_graph, v)
+        if new_points is not None and new_points.size > 0:
+            teach_points.append(new_points)
 
     # Gather repeat submaps (for the selected repeat run)
     repeat_points = []
@@ -153,3 +191,82 @@ if __name__ == '__main__':
 
     vis.run()
     vis.destroy_window()
+
+    
+'''
+
+# --- Extract and visualize submaps from both teach and repeat runs (ARC-LENGTH SYNC) ---
+first = True
+paused = False
+
+def toggle(vis):
+    global paused
+    paused = not paused
+    return False
+
+vis = o3d.visualization.VisualizerWithKeyCallback()
+vis.register_key_callback(ord(' '), toggle)
+vis.create_window()
+teach_pcd = o3d.geometry.PointCloud()
+repeat_pcd = o3d.geometry.PointCloud()
+vis.poll_events()
+vis.update_renderer()
+
+# Use the privileged chain for TEACH, temporal for REPEAT
+teach_vertices = list(PriviledgedIterator(v_start_teach))
+repeat_vertices = list(TemporalIterator(v_start_repeat))
+
+# Optionally trim ends
+teach_vertices_to_plot = teach_vertices[:-10] if len(teach_vertices) > 10 else teach_vertices
+repeat_vertices_to_plot = repeat_vertices[:-10] if len(repeat_vertices) > 10 else repeat_vertices
+
+# Collect submaps + their cumulative-distance progress (normalized 0..1)
+teach_points, s_teach = collect_points_with_progress(test_graph, teach_vertices_to_plot)
+repeat_points, s_repeat = collect_points_with_progress(test_graph, repeat_vertices_to_plot)
+
+if not teach_points:
+    print("Warning: no teach submaps extracted.")
+if not repeat_points:
+    print("Warning: no repeat submaps extracted.")
+
+max_len = max(len(teach_points), len(repeat_points))
+if max_len == 0:
+    vis.destroy_window()
+    raise SystemExit("No submaps to show.")
+
+# Build a common progress timeline and map to nearest index in each sequence
+progress = np.linspace(0.0, 1.0, max_len) if max_len > 1 else np.array([0.0])
+teach_idx = (np.searchsorted(s_teach, progress, side='left').clip(0, max(0, len(teach_points)-1))
+             if len(teach_points) else np.array([], dtype=int))
+repeat_idx = (np.searchsorted(s_repeat, progress, side='left').clip(0, max(0, len(repeat_points)-1))
+              if len(repeat_points) else np.array([], dtype=int))
+
+for i in range(max_len):
+    if len(teach_points):
+        ti = int(teach_idx[min(i, len(teach_idx)-1)])
+        teach_pcd.points = o3d.utility.Vector3dVector(teach_points[ti].T)
+        teach_pcd.paint_uniform_color((1.0, 0.0, 0.0))  # red
+        if first:
+            vis.add_geometry(teach_pcd)
+        else:
+            vis.update_geometry(teach_pcd)
+
+    if len(repeat_points):
+        ri = int(repeat_idx[min(i, len(repeat_idx)-1)])
+        repeat_pcd.points = o3d.utility.Vector3dVector(repeat_points[ri].T)
+        repeat_pcd.paint_uniform_color((0.0, 1.0, 0.0))  # green
+        if first:
+            vis.add_geometry(repeat_pcd)
+        else:
+            vis.update_geometry(repeat_pcd)
+
+    print("Plotting submaps (red teach, green repeat)...  [space] to pause")
+    t0 = time.time()
+    while time.time() - t0 < 0.1 or paused:
+        vis.poll_events()
+        vis.update_renderer()
+
+    first = False
+
+vis.run()
+vis.destroy_window()
