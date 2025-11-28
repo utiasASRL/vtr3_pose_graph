@@ -53,7 +53,7 @@ class LocalizationChainFactory(GraphFactory):
             loc_edge = Edge()
             loc_edge.from_id = loc_vertex.id
             loc_edge.to_id = loc_msg.vertex_id
-            loc_edge.T = Transformation(xi_ab=np.array(loc_msg.t_robot_vertex.xi).reshape(6, 1))
+            loc_edge.T = Transformation(xi_ab=-np.array(loc_msg.t_robot_vertex.xi).reshape(6, 1))
             loc_edge.type = EDGE_TYPE_SPATIAL
 
             graph.add_edge(loc_edge)

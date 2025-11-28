@@ -42,7 +42,7 @@ if __name__ == '__main__':
     pose_vec = pose_vec[:, t_sort]
 
     plt.figure(0)
-    plt.plot(pose_vec[0], pose_vec[1], label="Teach", linewidth=5)
+    plt.scatter(pose_vec[0], pose_vec[1], label="Teach", linewidth=5)
     plt.axis('equal')
     plt.legend()
 

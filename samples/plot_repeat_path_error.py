@@ -87,7 +87,6 @@ if __name__ == '__main__':
         plt.xlabel('x (m)')
         plt.ylabel('z (m)')
         plt.colorbar(label="Lateral Error (m)")
-        plt.legend()
 
 
         plt.figure(2)

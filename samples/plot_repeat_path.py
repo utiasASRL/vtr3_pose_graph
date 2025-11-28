@@ -1,3 +1,4 @@
+import datetime
 import os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -70,7 +71,6 @@ if __name__ == '__main__':
         t_sort = np.argsort(t)
         t = t[t_sort]
         pose_vec = pose_vec[:, t_sort]
-        print(t.shape)
 
         if t.shape[0] < 2 or v.taught:
             continue
@@ -87,7 +87,7 @@ if __name__ == '__main__':
         # plt.plot(p, pose_vec[4], label=f"Pitch Run {i+1}")
         plt.plot(p, pose_vec[5], label=f"Yaw Run {i+1}")
         plt.title("Orientation")
-        plt.xlabel("Time (s)")
+        plt.xlabel("Path Length (m)")
         plt.ylabel("Angle ($^\circ$)")
         plt.legend()
 
@@ -96,12 +96,12 @@ if __name__ == '__main__':
         plt.plot(p, pose_vec[1], label="Y")
         plt.plot(p, pose_vec[2], label="Z")
         plt.title("Position")
-        plt.xlabel("Time (s)")
+        plt.xlabel("Path Length (m)")
         plt.ylabel("Position (m)")
         plt.legend()
         
-        print(f"Path {i+1} was {path_len:.3f}m long with {len(x)} vertices")
-        print(f"Path {i+1} took {t[-1] - t[0]:.1f}s to complete")
+        print(f"Path {i+1} was {path_len:.3f}m long with {t.shape[0]} vertices")
+        print(f"Path {i+1} started at {datetime.datetime.fromtimestamp(t[0])} took {t[-1] - t[0]:.1f}s to complete")
 
         auto_path_len += path_len
 
