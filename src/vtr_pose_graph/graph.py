@@ -1,6 +1,8 @@
 from vtr_pose_graph import INVALID_ID
 from vtr_pose_graph.edge import Edge
 from vtr_pose_graph.vertex import Vertex
+from typing import Union
+from typing_extensions import Self
 
 
 class Graph:
@@ -33,11 +35,31 @@ class Graph:
     def contains_edge(self, e_id):
         return e_id in self._edges.keys()
 
-    def get_vertex(self, vid: int or tuple) -> Vertex:
+    def get_vertex(self, vid: Union[int, tuple]) -> Vertex:
         return self._vertices[self._handle_vid(vid)]
+    
+    def get_privileged_subgraph(self) -> Self:
+        teach_graph = Graph()
+        teach_graph.major_id = self.major_id
+        teach_graph.minor_id = self.minor_id
+
+        for v in self._vertices.values():
+            if v.taught:
+                v_copy = Vertex(bagfile_cache=v.cache)
+                v_copy.stamp = v.stamp
+                v_copy.id = v.id
+                teach_graph.add_vertex(v_copy)
+
+        for e in self._edges.values():
+            try:
+                teach_graph.add_edge(e)
+            except RuntimeError:
+                continue
+            
+        return teach_graph
 
 
-    def _handle_vid(self, vid: int or tuple) -> int:
+    def _handle_vid(self, vid: Union[int, tuple]) -> int:
         if isinstance(vid, int):
             return vid
         elif isinstance(vid, tuple) and len(vid) == 2 and isinstance(vid[0], int):

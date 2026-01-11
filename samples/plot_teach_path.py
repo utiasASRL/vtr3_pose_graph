@@ -1,8 +1,6 @@
-import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pylgmath import Transformation
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
 from vtr_pose_graph.graph_iterators import PriviledgedIterator
 import vtr_pose_graph.graph_utils as g_utils
@@ -13,22 +11,24 @@ import pylgmath.so3.operations as so3op
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-                        prog = 'Verify Point Cloud',
-                        description = 'Plots point cloud to verify alignment')
-    parser.add_argument('graph')      # option that takes a value
+                        prog = 'plot_teach_path.py',
+                        description = 'Plots the route of the teach path for a VR pose graph')
+    parser.add_argument('graph', help="File path to VR pose graph folder")
     args = parser.parse_args()
 
     offline_graph_dir = args.graph
     factory = Rosbag2GraphFactory(offline_graph_dir)
 
-    test_graph = factory.buildGraph()
-    print(f"Graph {test_graph} has {test_graph.number_of_vertices} vertices and {test_graph.number_of_edges} edges")
+    full_graph = factory.buildGraph()
+    teach_graph = full_graph.get_privileged_subgraph()
+    print(f"Full graph {full_graph} has {full_graph.number_of_vertices} vertices and {full_graph.number_of_edges} edges")
+    print(f"Teach subgraph {teach_graph} has {teach_graph.number_of_vertices} vertices and {teach_graph.number_of_edges} edges")
 
-    g_utils.set_world_frame(test_graph, test_graph.root)
+    g_utils.set_world_frame(teach_graph, teach_graph.root)
 
-    v_start = test_graph.root
+    v_start = teach_graph.root
 
-    path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start))
+    path_matrix = vtr_path.path_to_matrix(teach_graph, PriviledgedIterator(v_start))
 
     pose_vec = np.zeros((6, 0))
     t = []

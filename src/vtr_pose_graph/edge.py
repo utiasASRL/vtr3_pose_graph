@@ -46,4 +46,4 @@ class Edge:
         return self.type == EDGE_TYPE_TEMPORAL
 
     def __repr__(self):
-        return f"{'Taught' if self.is_teach() else 'Repeat'} {'Temporal' if self.is_temporal() else 'Spatial'} Edge"
+        return f"{'Taught' if self.is_teach() else 'Repeat'} {'Temporal' if self.is_temporal() else 'Spatial'} Edge {self.from_id} -> {self.to_id}"
