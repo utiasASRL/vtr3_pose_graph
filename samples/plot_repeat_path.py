@@ -113,7 +113,7 @@ if __name__ == '__main__':
         plt.plot(p, dist, label=f"RMSE: {rmse:.3f}m for Repeat {i+1}")
         plt.legend()
         plt.ylabel("Path Tracking Error (m)")
-        plt.xlabel("Time (s)")
+        plt.xlabel("Path Length (m)")
         plt.title("Path Tracking Error")
 
         plt.figure(3)
@@ -122,7 +122,7 @@ if __name__ == '__main__':
         plt.plot(p, np.hypot(vx, vy), label=f"V for Repeat {i+1}")
         plt.legend()
         plt.ylabel("Velocity (m/s)")
-        plt.xlabel("Time (s)")
+        plt.xlabel("Path Length (m)")
 
         plt.figure(4)
         acc_x = np.gradient(vx, t).squeeze()
@@ -130,7 +130,7 @@ if __name__ == '__main__':
         plt.plot(p, np.hypot(acc_x, acc_y), label=f"Acc for Repeat {i+1}")
         plt.legend()
         plt.ylabel("Acceleration (m/s^2)")
-        plt.xlabel("Time (s)")
+        plt.xlabel("Path Length (m)")
     print(f"Total repeat distance {auto_path_len:.2f} m")
     plt.show()
 

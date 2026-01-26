@@ -7,6 +7,7 @@ if  typing.TYPE_CHECKING:
     from vtr_pose_graph import GraphIterator
     from vtr_pose_graph.graph import Graph
 from vtr_pose_graph import INVALID_ID
+from vtr_pose_graph.graph_iterators import TemporalIterator
 
 
 def path_to_matrix(graph: Graph, path: GraphIterator):
@@ -125,3 +126,11 @@ def distances_to_path(points: np.ndarray, path: np.ndarray):
     
     return np.min(np.vstack([min_proj, min_dist]), axis=0).filled(0)
 
+
+def eval_run_pte(path_matrix, v_start):
+    dist = []
+
+    for v, e in TemporalIterator(v_start):
+        dist.append(signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
+
+    return dist
