@@ -134,3 +134,9 @@ def eval_run_pte(path_matrix, v_start):
         dist.append(signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
 
     return dist
+
+def eval_run_length(v_start):
+    path_len = 0
+    for v, e in TemporalIterator(v_start):
+        path_len += np.linalg.norm(e.T.r_ba_ina())
+    return path_len
