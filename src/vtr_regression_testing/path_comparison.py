@@ -30,8 +30,8 @@ def path_to_matrix(graph: Graph, path: GraphIterator):
     if points.shape[0] > 0:
         final_row = np.zeros((1, 7))
         final_row[0, :3] = x1.T
-        final_row[0, 3:6] = -n.T
-        final_row[0, 6] = l
+        final_row[0, 3:6] = n.T
+        final_row[0, 6] = 0
         points = np.vstack((points, final_row))
 
     return points
@@ -53,7 +53,7 @@ def distance_to_path(point: np.ndarray, path: np.ndarray):
     min_dist = np.min(dists)
 
     proj = np.diagonal(np.dot(points - x0, n.T))
-    segment_filter = (proj > 0) & (proj < l)
+    segment_filter = (proj >= 0) & (proj <= l)
 
     min_proj = 1e6
 
@@ -81,16 +81,20 @@ def signed_distance_to_path(point: np.ndarray, path: np.ndarray):
     min_dist = np.min(dists)
 
     proj = np.diagonal(np.dot(points - x0, tangent.T))
-    segment_filter = (proj > 0) & (proj < l)
-
-    min_proj = 1e6
+    segment_filter = (proj >= 0) & (proj <= l)
+    curve_filter = np.diff(np.sign(proj), append=np.sign(proj[-1])) != 0
 
     #Handle the edge cases where points are beyond the limits of the path
     if np.sum(segment_filter) > 0:
         idx_min_proj = np.argmin(norm_dist[segment_filter])
         if norm_dist[segment_filter][idx_min_proj] < min_dist:
             return -np.sign(norm_vec[segment_filter][idx_min_proj, 2]) * norm_dist[segment_filter][idx_min_proj]
-    return -min_dist
+    
+    if np.sum(curve_filter) > 0:
+        idx_min_proj = np.argmin(norm_dist[curve_filter])
+        return -np.sign(norm_vec[curve_filter][idx_min_proj, 2]) * min_dist
+
+    return min_dist
 
 def distances_to_path(points: np.ndarray, path: np.ndarray):
     """Path is assumed to be formatted from path_to_matrix"""
