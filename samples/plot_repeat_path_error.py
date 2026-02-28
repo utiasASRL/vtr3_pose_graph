@@ -1,4 +1,3 @@
-import os
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -71,10 +70,9 @@ if __name__ == '__main__':
 
     print(f"Path {args.run} was {path_len:.3f}m long")
     if len(t) > 2:
-        c = [abs(v) for v in dist]
 
         plt.figure(0)
-        plt.scatter(x, y, label=f"Repeat {args.run}", c=c)
+        plt.scatter(x, y, label=f"Repeat {args.run}", c=dist)
         plt.axis('equal')
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
@@ -83,7 +81,7 @@ if __name__ == '__main__':
 
         plt.figure(1)
         plt.title("Elevation of Path")
-        plt.scatter(x, z, label=f"Repeat {args.run}", c=c)
+        plt.scatter(x, z, label=f"Repeat {args.run}", c=dist)
         plt.xlabel('x (m)')
         plt.ylabel('z (m)')
         plt.colorbar(label="Lateral Error (m)")
@@ -95,7 +93,7 @@ if __name__ == '__main__':
 
         plt.plot(t, dist, label=f"RMSE: {rmse:.3f}m for Repeat {args.run}")
         print(f"RMSE: {rmse:.3f}m for Repeat {args.run}")
-        print(f"Max Error: {max(c):.3f}m for Repeat {args.run}")
+        print(f"Max Error: {max(np.abs(dist)):.3f}m for Repeat {args.run}")
         plt.legend()
         plt.ylabel("Path Tracking Error (m)")
         plt.xlabel("Time (s)")

@@ -1,10 +1,9 @@
-import os
+import datetime
 import numpy as np
 
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
 
 from vtr_pose_graph.graph_iterators import TemporalIterator
-import vtr_pose_graph.graph_utils as g_utils
 import argparse
 
 if __name__ == '__main__':
@@ -37,4 +36,6 @@ if __name__ == '__main__':
             path_len += np.linalg.norm(e.T.r_ba_ina())
         
         print(f"Path {i+1} was {path_len:.3f}m long with {len(x)} vertices and is a {'teach' if v.taught else 'repeat'}.")
+        print(f"Path {i+1} started at {datetime.datetime.fromtimestamp(t[0])} took {t[-1] - t[0]:.1f}s to complete")
+
 
