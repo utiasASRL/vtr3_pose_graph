@@ -20,7 +20,7 @@ if __name__ == '__main__':
     print(f"Graph {graph} has {graph.number_of_vertices} vertices and {graph.number_of_edges} edges")
 
 
-    for i in range(graph.major_id):
+    for i in range(graph.major_id + 1):
         v_start = graph.get_vertex((i,0))
 
         x = []
@@ -35,7 +35,7 @@ if __name__ == '__main__':
             t.append(v.stamp / 1e9)
             path_len += np.linalg.norm(e.T.r_ba_ina())
         
-        print(f"Path {i+1} was {path_len:.3f}m long with {len(x)} vertices and is a {'teach' if v.taught else 'repeat'}.")
-        print(f"Path {i+1} started at {datetime.datetime.fromtimestamp(t[0])} took {t[-1] - t[0]:.1f}s to complete")
+        print(f"Path {i} was {path_len:.3f}m long with {len(x)} vertices and is a {'teach' if v.taught else 'repeat'}.")
+        print(f"Path {i} started at {datetime.datetime.fromtimestamp(t[0])} took {t[-1] - t[0]:.1f}s to complete")
 
 

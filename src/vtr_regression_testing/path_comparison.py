@@ -10,7 +10,7 @@ from vtr_pose_graph import INVALID_ID
 from vtr_pose_graph.graph_iterators import TemporalIterator
 
 
-def path_to_matrix(graph: Graph, path: GraphIterator):
+def path_to_matrix(graph: Graph, path: GraphIterator, drop_z=False):
     """The vertices of the graph are assumed to be defined in the world frame."""
     
     #First 3 are the position of the start of the line, second three are the unit vector along the path segment
@@ -20,6 +20,11 @@ def path_to_matrix(graph: Graph, path: GraphIterator):
             continue
         x0 = graph.get_vertex(e.from_id).T_v_w.r_ba_ina()
         x1 = graph.get_vertex(e.to_id).T_v_w.r_ba_ina()
+
+        if drop_z:
+            x0[-1] = 0
+            x1[-1] = 0
+            
         l = np.linalg.norm(x1 - x0)
         n = (x1 - x0) / l
         row = np.zeros((1, 7))
@@ -131,11 +136,14 @@ def distances_to_path(points: np.ndarray, path: np.ndarray):
     return np.min(np.vstack([min_proj, min_dist]), axis=0).filled(0)
 
 
-def eval_run_pte(path_matrix, v_start):
+def eval_run_pte(path_matrix, v_start, drop_z=False):
     dist = []
 
     for v, e in TemporalIterator(v_start):
-        dist.append(signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
+        vec = v.T_v_w.r_ba_ina()
+        if drop_z:
+            vec[-1] = 0
+        dist.append(signed_distance_to_path(vec, path_matrix))
 
     return dist
 
