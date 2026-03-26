@@ -1,7 +1,7 @@
 import os
 import matplotlib.pyplot as plt
-import numpy as np
 import open3d as o3d
+import numpy as np
 import argparse
 import time
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
@@ -28,62 +28,9 @@ if __name__ == '__main__':
 
     # Compare signed distances
     v_start_teach = test_graph.root
-    path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start_teach))
-
-    # Get teach path vertices (skipping first and last few)
-    x, y, z, t = [], [], [], []
-    vertices = list(PriviledgedIterator(v_start_teach))
-    for i, (v, e) in enumerate(vertices):
-        #if i < 15 or i >= len(vertices) - 15:
-        pass
-            #continue
-        x.append(v.T_v_w.r_ba_ina()[0])
-        y.append(v.T_v_w.r_ba_ina()[1])
-        z.append(v.T_v_w.r_ba_ina()[2])
-        t.append(v.stamp / 1e9)
-
-    plt.figure(0)
-    plt.scatter(x, y, label="Teach")
-    plt.axis('equal')
-    plt.figure(1)
-    plt.scatter(x, z, label="Teach")
-
     # Process repeat run for signed distance comparison
     v_start_repeat = test_graph.get_vertex((args.run, 0))
-    x, y, z, t, dist = [], [], [], [], []
-    path_len = 0
-    vertices = list(TemporalIterator(v_start_repeat))
-    for i, (v, e) in enumerate(vertices):
-        #if i < 50 or i >= len(vertices) - 50:
-        pass
-            #continue
-        x.append(v.T_v_w.r_ba_ina()[0])
-        y.append(v.T_v_w.r_ba_ina()[1])
-        z.append(v.T_v_w.r_ba_ina()[2])
-        t.append(v.stamp / 1e9)
-        d = vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix)
-        dist.append(d)
-        path_len += np.linalg.norm(e.T.r_ba_ina())
     
-    max_error = max(abs(v) for v in dist)
-    print(f"Path {args.run} was {path_len:.3f}m long")
-    if len(t) > 2:
-        c = [abs(v) for v in dist]
-        plt.figure(0)
-        plt.scatter(x, y, label=f"Repeat {args.run} (Max Error: {max_error:.3f}m)", c=c)
-        plt.axis('equal')
-        plt.xlabel('x (m)')
-        plt.ylabel('y (m)')
-        plt.colorbar(label="Lateral Error (m)")
-        plt.legend()
-        plt.figure(1)
-        plt.scatter(x, z, label=f"Repeat {args.run} (Max Error: {max_error:.3f}m)", c=c)
-        plt.xlabel('x (m)')
-        plt.ylabel('z (m)')
-        plt.colorbar(label="Lateral Error (m)")
-        plt.legend()
-        plt.show()
-
     # Extract and visualize submaps from both teach and repeat runs
     first = True
     paused = False
@@ -105,6 +52,8 @@ if __name__ == '__main__':
     # Gather teach submaps by iterating over all teach runs
     teach_points = []
     for i in range(test_graph.major_id + 1):
+        v_start_teach = test_graph.get_vertex((i, 0))
+        paused = True
         vertices = list(TemporalIterator(v_start_teach))
         # Optionally filter out the very first/last vertices
         vertices_to_plot = vertices[:-10] if len(vertices) > 10 else vertices

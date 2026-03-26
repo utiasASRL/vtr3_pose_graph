@@ -57,7 +57,6 @@ def set_world_frame(graph: Graph, vertex: Vertex, T_w_v0=Transformation()):
         v_to = graph.get_vertex(e.to_id)
 
         v.T_w_v = v_to.T_w_v @ e.T if v == v_from else v_from.T_w_v @ e.T.inverse()
-        #print(v.T_w_v)
 
 def mask_points_near_vertex(vertex: Vertex, points:np.ndarray, distance: float):
     return np.linalg.norm(points[:, :2] - vertex.T_v_w.r_ba_ina()[:2].reshape(1, 2), axis=1) < distance

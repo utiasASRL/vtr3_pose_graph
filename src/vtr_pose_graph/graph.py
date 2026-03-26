@@ -1,7 +1,7 @@
 from vtr_pose_graph import INVALID_ID
 from vtr_pose_graph.edge import Edge
 from vtr_pose_graph.vertex import Vertex
-
+import pdb
 
 class Graph:
     def __init__(self, graph_msg=None):

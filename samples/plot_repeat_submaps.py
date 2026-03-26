@@ -11,7 +11,7 @@ from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
 from vtr_pose_graph.graph_iterators import TemporalIterator, PriviledgedIterator, SpatialIterator
 import vtr_pose_graph.graph_utils as g_utils
 
-sys.path.append('/home/desiree/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/src')
+sys.path.append('/home/asrl/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/src')
 
 if __name__ == '__main__':
 
@@ -71,7 +71,8 @@ if __name__ == '__main__':
 
             pcd.points = o3d.utility.Vector3dVector(new_points.T)
             if np.allclose(map_ptr.matrix(), np.eye(4)):
-                pcd.paint_uniform_color((1.0, 0.0, 0.0))  # Red color for identity matrix
+                pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
+                # pcd.paint_uniform_color((1.0, 0.0, 0.0))  # Red color for identity matrix
             else:
                 pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
 
@@ -85,7 +86,7 @@ if __name__ == '__main__':
             else:
                 vis.update_geometry(pcd)
                 vis.remove_geometry(frame, reset_bounding_box=False)
-                vis.add_geometry(frame)
+                vis.add_geometry(frame, reset_bounding_box=False)
             t = time.time()
             while time.time() - t < 0.1 or paused:
                 vis.poll_events()

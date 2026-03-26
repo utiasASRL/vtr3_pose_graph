@@ -1,7 +1,6 @@
 import os
 import time
 import numpy as np
-import matplotlib.pyplot as plt
 from sensor_msgs_py.point_cloud2 import read_points
 import open3d as o3d
 import sys
@@ -12,7 +11,7 @@ from vtr_pose_graph.graph_iterators import TemporalIterator, PriviledgedIterator
 import vtr_pose_graph.graph_utils as g_utils
 from pylgmath import Transformation
 
-sys.path.append('/home/desiree/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/src')
+sys.path.append('/home/asrl/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/src')
 
 if __name__ == '__main__':
 
@@ -31,9 +30,6 @@ if __name__ == '__main__':
 
     x = []
     y = []
-    live_2_map = []
-    map_2_live = []
-
 
     first = True
     paused = False
@@ -83,12 +79,13 @@ if __name__ == '__main__':
 
             pcd.points = o3d.utility.Vector3dVector(new_points.T)
             if np.allclose(T_map_v.matrix(), np.eye(4)):
-                pcd.paint_uniform_color((1.0, 0.0, 0.0))  # Red color for identity matrix
+                pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.2))
+                # pcd.paint_uniform_color((1.0, 0.0, 0.0))  # Red color for identity matrix
             else:
-                pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
+                pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.2))
 
             # Create coordinate frame for the vertex
-            frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=robot_position)
+            frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5, origin=robot_position)
 
             if first:
                 first = False
@@ -96,8 +93,8 @@ if __name__ == '__main__':
                 vis.add_geometry(frame)
             else:
                 vis.update_geometry(pcd)
-                vis.remove_geometry(frame, reset_bounding_box=False)
-                vis.add_geometry(frame)
+                vis.remove_geometry(frame, reset_bounding_box=False) # False
+                vis.add_geometry(frame, reset_bounding_box=False) # False
             t = time.time()
             while time.time() - t < 0.1 or paused:
                 vis.poll_events()

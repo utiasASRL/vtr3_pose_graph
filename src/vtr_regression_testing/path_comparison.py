@@ -8,7 +8,7 @@ if  typing.TYPE_CHECKING:
     from vtr_pose_graph.graph import Graph
 from vtr_pose_graph import INVALID_ID
 
-
+import pdb
 def path_to_matrix(graph: Graph, path: GraphIterator):
     """The vertices of the graph are assumed to be defined in the world frame."""
     
@@ -16,6 +16,7 @@ def path_to_matrix(graph: Graph, path: GraphIterator):
     points = np.zeros((0, 7))
     for v, e in path:
         if e.from_id == INVALID_ID or e.to_id == INVALID_ID:
+            # print(f'from: {e.from_id} to: {e.to_id}')
             continue
         x0 = graph.get_vertex(e.from_id).T_v_w.r_ba_ina()
         x1 = graph.get_vertex(e.to_id).T_v_w.r_ba_ina()

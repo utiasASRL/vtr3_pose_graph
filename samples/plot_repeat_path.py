@@ -38,10 +38,10 @@ if __name__ == '__main__':
     auto_path_len = 0
 
     # Number of initial vertices to exclude
-    exclude_n_teach = int(os.getenv("EXCLUDE_VERTICES", 28)) #for whole big boi: 28, for without grassy: 28 - for solo parking: 5
+    exclude_n_teach = int(os.getenv("EXCLUDE_VERTICES", 5)) #for whole big boi: 28, for without grassy: 28 - for solo parking: 5
     
     # Number of final vertices to exclude from the teach path
-    exclude_n_teach_end = int(os.getenv("EXCLUDE_VERTICES_END", 53)) #for whole big boi: 53, , for without grassy: 483 - for solo parking: 10
+    exclude_n_teach_end = int(os.getenv("EXCLUDE_VERTICES_END", 0)) #for whole big boi: 53, , for without grassy: 483 - for solo parking: 10
     
     # Skip the first exclude_n_teach and last exclude_n_teach_end vertices in the teach path
     teach_iter = list(TemporalIterator(v_start))[exclude_n_teach:]
@@ -81,7 +81,7 @@ if __name__ == '__main__':
         y = []
         
         # Number of initial vertices to exclude
-        exclude_n_repeat = int(os.getenv("EXCLUDE_VERTICES", 30)) #for whole big boi: 30, for without grassy: 30 - for solo parking: 0 
+        exclude_n_repeat = int(os.getenv("EXCLUDE_VERTICES", 0)) #for whole big boi: 30, for without grassy: 30 - for solo parking: 0 
         
         # Number of final vertices to exclude from the repeat path
         exclude_n_repeat_end = int(os.getenv("EXCLUDE_VERTICES_END", 0)) #for whole big boi: 0, for without grassy: 430 - for solo parking: 60
@@ -111,7 +111,7 @@ if __name__ == '__main__':
             continue
 
         plt.figure(0)
-        plt.scatter(pose_vec[0], pose_vec[1], label=f"Repeat {i+1}")
+        plt.scatter(pose_vec[0], pose_vec[1], label=f"Repeat {i+1}",s=0.5)
         plt.axis('equal')
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
