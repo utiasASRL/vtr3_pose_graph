@@ -60,18 +60,43 @@ if __name__ == '__main__':
     repeat_t = []
     p = []     # cumulative path length
     dist = []  # tracking error at each vertex
-    path_len = 0
+    path_len = 0.0
 
+    # collect repeat z values to compute z-bias
+    repeat_z_vals = []
     for v, e in TemporalIterator(vertex_start):
-        repeat_x.append(v.T_v_w.r_ba_ina()[0])
-        repeat_y.append(v.T_v_w.r_ba_ina()[1])
-        repeat_z.append(v.T_v_w.r_ba_ina()[2])
+        repeat_z_vals.append(v.T_v_w.r_ba_ina()[2])
+
+    m = path_matrix.shape[0] if path_matrix is not None else 0
+    if len(repeat_z_vals) == 0 or m == 1:
+        z_bias = 0.0
+    else:
+        z_bias = np.mean(path_matrix[:, 2]) - np.mean(repeat_z_vals)
+
+    # second pass: apply z-bias, compute distances and cumulative length
+    for v, e in TemporalIterator(vertex_start):
+        r = v.T_v_w.r_ba_ina()
+        r[2] += z_bias
+        repeat_x.append(r[0])
+        repeat_y.append(r[1])
+        repeat_z.append(r[2])
         repeat_t.append(v.stamp / 1e9)
-        dist.append(vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
-        path_len += np.linalg.norm(e.T.r_ba_ina())
+        dist.append(vtr_path.signed_distance_to_path(r, path_matrix))
+        if e is not None:
+            path_len += np.linalg.norm(e.T.r_ba_ina())
         p.append(path_len)
 
-    max_error = max(abs(v) for v in dist)
+    # ensure arrays are ordered by time
+    if len(repeat_t) > 0:
+        order = np.argsort(repeat_t)
+        repeat_x = list(np.array(repeat_x)[order])
+        repeat_y = list(np.array(repeat_y)[order])
+        repeat_z = list(np.array(repeat_z)[order])
+        repeat_t = list(np.array(repeat_t)[order])
+        p = list(np.array(p)[order])
+        dist = list(np.array(dist)[order])
+
+    max_error = max(abs(v) for v in dist) if len(dist) > 0 else 0.0
 
     print(f"Path {args.run} was {path_len:.3f}m long")
     if len(repeat_t) > 2:

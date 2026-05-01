@@ -2,7 +2,6 @@ import os
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from sensor_msgs_py.point_cloud2 import read_points
 import open3d as o3d
 import sys
 from vtr_utils.plot_utils import extract_map_from_vertex, extract_points_from_vertex, convert_points_to_frame
@@ -82,10 +81,11 @@ if __name__ == '__main__':
             y.append(vertex.T_v_w.r_ba_ina()[1])
 
             pcd.points = o3d.utility.Vector3dVector(new_points.T)
-            if np.allclose(T_map_v.matrix(), np.eye(4)):
-                pcd.paint_uniform_color((1.0, 0.0, 0.0))  # Red color for identity matrix
-            else:
-                pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
+            # if np.allclose(T_map_v.matrix(), np.eye(4)):
+            #     pcd.paint_uniform_color((0.0, 1.0, 0.0))  # Red color for identity matrix
+            # else:
+            #     pcd.paint_uniform_color((0.1*vertex.run, 0.25*vertex.run, 0.45))
+            pcd.paint_uniform_color((1.0, 0.0, 0.0))  # Always green
 
             # Create coordinate frame for the vertex
             frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=robot_position)

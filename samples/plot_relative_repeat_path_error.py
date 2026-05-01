@@ -1,5 +1,6 @@
 import os
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import numpy as np
 from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
 from vtr_pose_graph.graph_iterators import TemporalIterator
@@ -70,32 +71,53 @@ def plot_paths(ax, test_graph, run1, run2, path_matrix1, omit_start, omit_end, v
 if __name__ == '__main__':
      
      offline_graph_dirs = [
-            "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/dome/graph",
             "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/parking/graph",
+            "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/dome/graph",
             "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/bigpath/graph",
-            "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/grassy/graph"
+            "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/grassy/graph",
+            "/home/desiree/ASRL/vtr3/temp/Experiment2/VirRTR/Pix4D/parking/graph",
+            "/home/desiree/ASRL/vtr3/temp/Experiment2/VirRTR/Pix4D/dome/graph"
      ]
      runs = [
-            (1, 3, 4, 5, 6),
-            (4, 7, 8, 9, 10),   
+            (4, 7, 8, 9, 10), 
+            (1, 3, 4, 5, 6),  
             (1, 2, 3, 4, 5),
-            (1, 2, 3, 5, 6)
+            (1, 2, 3, 5, 6),
+            (1, 3, 4, 5, 7),
+            (1, 2, 4, 5, 6)
      ]
 
-     omit_starts = [0, 0, 0, 0]  # Number of vertices to omit from the start for each graph
-     omit_ends = [2, 2, 2, 2]    # Number of vertices to omit from the end for each graph
+     names = [
+            "Urban-C (VirLT&R)",
+            "Structured-C (VirLT&R)",
+            "Semi-Structured-C (VirLT&R)",
+            "Rural-C (VirLT&R)",
+            "Urban-C (VirRT&R)",
+            "Structured-C (VirRT&R)"
+     ]
+
+     omit_starts = [0, 0, 0, 0, 0, 0]  # Number of vertices to omit from the start for each graph
+     omit_ends = [2, 2, 2, 2, 2, 2]    # Number of vertices to omit from the end for each graph
 
      # Determine grid layout dynamically based on the number of graphs
      n_graphs = len(offline_graph_dirs)
      n_cols = 4  # modify as needed
      n_rows = math.ceil(n_graphs / n_cols)
-     fig, axs = plt.subplots(n_rows, n_cols, figsize=(18, 18)) #15
-
-     # Make axs a flat list for easy indexing.
-     if n_graphs == 1:
-            axs = [axs]
-     else:
-            axs = np.array(axs).flatten()
+     
+     fig = plt.figure(figsize=(18, 18))
+     gs = gridspec.GridSpec(n_rows, n_cols, figure=fig, hspace=0.35, wspace=0.3)
+     
+     axs = []
+     for i in range(n_graphs):
+          if i >= n_cols:  # Bottom row
+               col_offset = (n_cols - (n_graphs - n_cols)) // 2  # Center the remaining plots
+               col = col_offset + (i - n_cols)
+          else:
+               col = i
+          ax = fig.add_subplot(gs[i // n_cols, col])
+          axs.append(ax)
+     
+     axs = np.array(axs)
 
      plt.rcParams.update({'font.size': 18})  # Set default font size
 
@@ -197,7 +219,9 @@ for i, (offline_graph_dir, run_set, omit_start, omit_end) in enumerate(zip(offli
          # Removed individual x and y labels for subplots
          ax.grid(True, which='both', color='lightgrey', linestyle='-', linewidth=0.5, zorder=-1)
          ax.tick_params(axis='both', which='major', labelsize=16)
-         # Removed legend for the subplot
+         
+         # Add subplot name below the plot
+         ax.set_xlabel(names[i], fontsize=16, labelpad=20)
 
 # Turn off any unused subplots.
 for idx in range(n_graphs, len(axs)):
@@ -215,7 +239,7 @@ y_label = fig.supylabel("y (m)", fontsize=18)
 # Shift the y-label closer to the subplots by adjusting its x-position.
 y_label.set_x(0.06)
 # Set the overall figure title.
-fig.suptitle("VirLTR (Pix4D) Relative Repeat Deviation", fontsize=20)
+fig.suptitle("VirT&R (Pix4D) Relative Repeat Deviation", fontsize=20)
 
 #plt.tight_layout(pad=0.25)
 plt.show()

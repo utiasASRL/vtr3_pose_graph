@@ -245,7 +245,7 @@ for i in range(max_len):
     if len(teach_points):
         ti = int(teach_idx[min(i, len(teach_idx)-1)])
         teach_pcd.points = o3d.utility.Vector3dVector(teach_points[ti].T)
-        teach_pcd.paint_uniform_color((1.0, 0.0, 0.0))  # red
+        teach_pcd.paint_uniform_color((0.0, 1.0, 0.0))  # red
         if first:
             vis.add_geometry(teach_pcd)
         else:
@@ -254,7 +254,7 @@ for i in range(max_len):
     if len(repeat_points):
         ri = int(repeat_idx[min(i, len(repeat_idx)-1)])
         repeat_pcd.points = o3d.utility.Vector3dVector(repeat_points[ri].T)
-        repeat_pcd.paint_uniform_color((0.0, 1.0, 0.0))  # green
+        repeat_pcd.paint_uniform_color((1.0, 0.0, 0.0))  # green
         if first:
             vis.add_geometry(repeat_pcd)
         else:
