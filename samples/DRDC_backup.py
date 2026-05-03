@@ -495,9 +495,9 @@ def summary_marker_box_plots(experiments):
 
 if __name__ == "__main__":
     # Generate individual comparison plots for each experiment and path.
-    for exp_name, paths in EXPERIMENTS.items():
-        for path_name, cfg in paths.items():
-            process_experiment(exp_name, path_name, cfg)
+    # for exp_name, paths in EXPERIMENTS.items():
+    #     for path_name, cfg in paths.items():
+    #         process_experiment(exp_name, path_name, cfg)
 
     # Call the summary marker box plots function using the EXPERIMENTS dictionary.
     summary_marker_box_plots(EXPERIMENTS) 

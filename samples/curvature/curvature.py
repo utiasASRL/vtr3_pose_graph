@@ -38,7 +38,10 @@ def connect_axes(fig, ax_from, ax_to):
 # ============================
 # Load data
 # ============================
-pkl_dir = "curvature/"
+pkl_dir = os.path.dirname(os.path.abspath(__file__))
+
+if not os.path.isdir(pkl_dir):
+    raise FileNotFoundError(f"Missing curvature data directory: {pkl_dir}")
 
 for fname in os.listdir(pkl_dir):
     if fname.endswith(".pkl"):

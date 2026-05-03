@@ -14,7 +14,7 @@ TODO:
  x box plots
 """
 
-pkl_dir = "pkls/"
+pkl_dir = "/home/desiree/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/samples/pkls"
 
 # raw trials
 r_office_LTR = []
@@ -68,7 +68,7 @@ def merge_trials(t1, t2):
     merged_trial = (t1[0], np.vstack((t1[1],t2[1])), np.hstack((t1[2],shifted_dists)),np.hstack((t1[3],t2[3])))
     return merged_trial   
 
-# fix office LTR 1,2 ->  [13,15],[12,18], 20, 21
+# fix office LT&R 1,2 ->  [13,15],[12,18], 20, 21
 office_LTR.append(merge_trials(r_office_LTR[0],r_office_LTR[1]))
 office_LTR.append(merge_trials(r_office_LTR[2],r_office_LTR[3]))
 office_LTR.append(r_office_LTR[4])
@@ -294,16 +294,16 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
     
     # Structure data like the original EXPERIMENTS dict
     experiments_data = {
-        "LTR vs. VirTR": {
-            "Office": {
+        "LT&R vs. VirLT&R (Pix4D)": {
+            "Urban-R": {
                 'method_1_marker_errors': markers_array_to_dict(office_markers['ltr_markers']),
                 'method_2_marker_errors': markers_array_to_dict(office_markers['virtr_markers']),
             },
-            "Urban": {
+            "Structured-R": {
                 'method_1_marker_errors': markers_array_to_dict(urban_markers['ltr_markers']),
                 'method_2_marker_errors': markers_array_to_dict(urban_markers['virtr_markers']),
             },
-            "Rural": {
+            "Sparse-R": {
                 'method_1_marker_errors': markers_array_to_dict(rural_markers['ltr_markers']),
                 'method_2_marker_errors': markers_array_to_dict(rural_markers['virtr_markers']),
             },
@@ -324,7 +324,7 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
                           if key.startswith("method_") and "marker_errors" in key]
             
             if method_keys:
-                parsed_labels = ["LTR", "VirTR"]  # Explicit labels
+                parsed_labels = ["LT&R", "VirLT&R (Pix4D)"]  # Explicit labels
                 sorted_keys = sorted(method_keys, key=lambda key: int(key.split("_")[1]))
                 
                 for i, key in enumerate(sorted_keys):
@@ -342,20 +342,30 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
             continue
         
         # Method labels
-        all_method_labels = ["LTR", "VirTR"]
+        all_method_labels = ["LT&R", "VirLT&R (Pix4D)"]
         num_methods = len(all_method_labels)
         method_color = {label: colors[i % len(colors)]
                        for i, label in enumerate(all_method_labels)}
         
-        # Define box group configuration
-        group_width = 0.15
+        # Define box group configuration (tighter spacing)
+        group_width = 0.12
+        group_gap = 0.4
         
+        # Larger text settings for this figure
+        title_fs = 22
+        label_fs = 22
+        tick_fs = 20
+        legend_fs = 18
+
         # Create figure
         fig, ax = plt.subplots(figsize=(10, 6))
-        ax.set_title(f"{exp_name} – Marker Errors Summary")
+        ax.set_xticklabels(all_method_labels, fontsize=tick_fs)
+        ax.set_ylabel("Marker Error (m)", fontsize=label_fs)
+        #ax.set_title(f"{exp_name} – Marker Errors Summary", fontsize=title_fs)
         ax.set_ylabel("Marker Error (m)")
-        ax.grid(True, linestyle='--', alpha=0.5)
-        ax.axhline(0, linestyle='--', linewidth=2, color='darkgrey')
+        ax.grid(True, linestyle="--", alpha=0.5)
+        ax.axhline(0, linestyle="--", linewidth=1.5, color="darkgrey")
+        ax.tick_params(axis='y', labelsize=tick_fs)
         
         # Collect positions and data for each method
         method_to_positions = {label: [] for label in all_method_labels}
@@ -363,9 +373,9 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
         x_ticks = []
         
         for i, pdata in enumerate(per_path_method_data):
-            group_center = i + 1
+            group_center = (i + 1) * group_gap
             x_ticks.append(group_center)
-            
+
             for j, m_label in enumerate(all_method_labels):
                 offset = (j - (num_methods - 1) / 2) * group_width
                 method_to_positions[m_label].append(group_center + offset)
@@ -373,40 +383,59 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
         
         # Plot boxes for each method
         for m_label in all_method_labels:
-            bp = ax.boxplot(method_to_data[m_label],
-                           positions=method_to_positions[m_label],
-                           widths=group_width * 0.8,
-                           patch_artist=True,
-                           manage_ticks=False,
-                           )
-            for patch in bp['boxes']:
+            bp = ax.boxplot(
+                method_to_data[m_label],
+                positions=method_to_positions[m_label],
+                widths=group_width * 0.8,
+                patch_artist=True,
+                manage_ticks=False
+            )
+            for patch in bp["boxes"]:
                 patch.set_facecolor(method_color[m_label])
-        
+                patch.set_edgecolor("black")
+            for element in ("whiskers", "caps", "medians"):
+                for artist in bp[element]:
+                    artist.set_color("black")
+
         # Set x-axis ticks
         ax.set_xticks(x_ticks)
-        ax.set_xticklabels(path_names, rotation=45, ha='right')
-        
+        ax.set_xticklabels(path_names, rotation=0, ha='center')
+        ax.tick_params(axis='x', labelsize=tick_fs)
+
         # Build legend
-        legend_handles = [Patch(facecolor=method_color[m_label], edgecolor='black', label=m_label)
-                         for m_label in all_method_labels]
-        ax.legend(handles=legend_handles, loc='best')
-        
+        legend_handles = [
+            Patch(facecolor=method_color[m_label], edgecolor='black', label=m_label)
+            for m_label in all_method_labels
+        ]
+        ax.legend(handles=legend_handles, loc='best', fontsize=legend_fs)
+
         plt.tight_layout()
+        # Optional if labels are still cramped:
+        # plt.subplots_adjust(bottom=0.18)
         plt.savefig('box_plot', dpi=300, bbox_inches='tight')
         plt.show()
 
 
 def plot_experiment(ltr, virtr, markers, discounted):
+    # Larger text settings for this figure
+    title_fs = 20
+    label_fs = 20
+    tick_fs = 18
+    legend_fs = 12
     fig_pte, ax_pte = plt.subplots()
-    ax_pte.set_xlabel("Path Length (m)")
-    ax_pte.set_ylabel("PTE (m)")
+    ax_pte.set_xlabel("Path Length (m)", fontsize=label_fs)
+    ax_pte.set_ylabel("PTE (m)", fontsize=label_fs)
     ax_pte.grid(True)
     ax_pte.axhline(0, linestyle='--', linewidth=1.0, color='gray')
+    ax_pte.tick_params(axis='y', labelsize=tick_fs)
+    ax_pte.tick_params(axis='x', labelsize=tick_fs)
+
+
 
     if discounted[2] == 'office' or discounted[2] == 'rural':
         ax_pte.axvspan(discounted[0], discounted[1], color='grey', alpha=0.5, label="Operator Error")
     if discounted[2] == 'urban':
-        ax_pte.axvspan(discounted[0], discounted[1], color='burlywood', alpha=0.5, label="Platform-specific miscalibration")
+        ax_pte.axvspan(discounted[0], discounted[1], color='burlywood', alpha=0.5, label="Platform-Specific Miscalibration")
 
     ltr_stats = get_stats(ltr, discounted, marker_distances=markers['ltr_dist'])
     virtr_stats = get_stats(virtr, discounted, marker_distances=markers['virtr_dist'])
@@ -417,44 +446,132 @@ def plot_experiment(ltr, virtr, markers, discounted):
     # get internally estimated distance at markers
     # idx = np.searchsorted(ltr_stats['common_x'], markers['ltr_dist'])
     # pte_marks = ltr_stats['average_dists'][idx-1]
-    print(f"LTR   PTE@Marks RMSE={ltr_stats['rmse_at_marks']:.3f} m, Max={ltr_stats['max_at_marks']:.3f} m)")
+    print(f"LT&R   PTE@Marks RMSE={ltr_stats['rmse_at_marks']:.3f} m, Max={ltr_stats['max_at_marks']:.3f} m)")
     # idx = np.searchsorted(virtr_stats['common_x'], markers['virtr_dist'])
     # pte_marks = virtr_stats['average_dists'][idx-1]
-    print(f"VirTR PTE@Marks RMSE={virtr_stats['rmse_at_marks']:.3f} m, Max={virtr_stats['max_at_marks']:.3f} m)")
+    print(f"VirT&R PTE@Marks RMSE={virtr_stats['rmse_at_marks']:.3f} m, Max={virtr_stats['max_at_marks']:.3f} m)")
 
-    # LTR
+    # LT&R
     ax_pte.plot(ltr_stats['common_x'], ltr_stats['average_dists'], linewidth=1.5, color='lightcoral',
-        label=(f"LTR Discounted Avg PTE Curve (RMSE={ltr_stats['discounted_rmse_all']:.3f} m, Max={ltr_stats['discounted_max_all']:.3f} m)"))
+        label=(f"LT&R Discounted Avg PTE Curve (RMSE={ltr_stats['discounted_rmse_all']:.3f} m, Max={ltr_stats['discounted_max_all']:.3f} m)"))
     ax_pte.plot(ltr_stats['common_x'], ltr_stats['average_dists'], linewidth=1.5, color='lightcoral',
-        label=(f"LTR Avg PTE Curve (RMSE={ltr_stats['rmse_all']:.3f} m, Max={ltr_stats['max_all']:.3f} m)"))
+        label=(f"LT&R Avg PTE Curve (RMSE={ltr_stats['rmse_all']:.3f} m, Max={ltr_stats['max_all']:.3f} m)"))
     ax_pte.scatter(markers['ltr_dist'], markers['ltr_markers'][:,0], s=80, marker='x', linewidths=1.2, alpha=0.9, c='r', zorder=10,
-                    label=(f"LTR Marker Measurements "
+                    label=(f"LT&R Marker Measurements "
                     f"(RMSE={ltr_marker_rmse:.3f} m, Max={ltr_marker_max:.3f} m)"
                     ))
     for i in range(1,markers['ltr_markers'].shape[1]):
         ax_pte.scatter(markers['ltr_dist'], markers['ltr_markers'][:,i], s=80, marker='x', linewidths=1.2, alpha=0.9, c='r', zorder=10)
     
 
-    # VirTR
+    # VirT&R
     ax_pte.plot(virtr_stats['common_x'], virtr_stats['average_dists'], linewidth=1.5, color='lightskyblue',
-        label=(f"VirTR Discounted Avg PTE Curve (RMSE={virtr_stats['discounted_rmse_all']:.3f} m, Max={virtr_stats['discounted_max_all']:.3f} m)"))
+        label=(f"VirT&R Discounted Avg PTE Curve (RMSE={virtr_stats['discounted_rmse_all']:.3f} m, Max={virtr_stats['discounted_max_all']:.3f} m)"))
     # ax_pte.plot(virtr_stats['common_x'], virtr_stats['average_dists'], linewidth=1.5, color='lightskyblue',
     #     label=(f"Avg PTE Curve (RMSE={virtr_stats['rmse_all']:.3f} m, Max={virtr_stats['max_all']:.3f} m)"))
     ax_pte.scatter(markers['virtr_dist'], markers['virtr_markers'][:,0], s=80, marker='x', linewidths=1.2, alpha=0.9, c='b', zorder=10,
-                label=(f"VirTR Marker Measurements "
+                label=(f"VirT&R Marker Measurements "
                 f"(RMSE={virtr_marker_rmse:.3f} m, Max={virtr_marker_max:.3f} m)"
                 ))
     for i in range(1,markers['virtr_markers'].shape[1]):
         ax_pte.scatter(markers['virtr_dist'], markers['virtr_markers'][:,i], s=80, marker='x', linewidths=1.2, alpha=0.9, c='b', zorder=10)
     
 
-    ax_pte.legend()
+    ax_pte.legend(fontsize=legend_fs)
     plt.show()
     fig_pte.savefig(discounted[2], dpi=300, bbox_inches='tight')
 
 
-plot_experiment(office_LTR, office_VirTR, office_markers, office_discount)
-plot_experiment(urban_LTR, urban_VirTR, urban_markers, urban_discount)
-plot_experiment(rural_LTR, rural_VirTR, rural_markers, rural_discount)
+def summary_pte_plots(office_ltr, office_virtr, office_markers, office_discount,
+                      urban_ltr, urban_virtr, urban_markers, urban_discount,
+                      rural_ltr, rural_virtr, rural_markers, rural_discount):
+    """
+    Create a single figure with 3 subplots showing PTE curves across all environments.
+    Each subplot shows LT&R vs. VirT&R for one environment.
+    """
+    environments = [
+        ("Urban-R", office_ltr, office_virtr, office_markers, office_discount),
+        ("Structured-R", urban_ltr, urban_VirTR, urban_markers, urban_discount),
+        ("Sparse-R", rural_ltr, rural_VirTR, rural_markers, rural_discount),
+    ]
+    
+    fig, axs = plt.subplots(3, 1, figsize=(14, 12))
+    axs = np.atleast_1d(axs).flatten()
+    
+    title_fs = 20
+    label_fs = 18
+    tick_fs = 16
+    legend_fs = 10
+    
+    for idx, (env_name, ltr, virtr, markers, discounted) in enumerate(environments):
+        ax_pte = axs[idx]
+        
+        # Add shaded regions
+        if discounted[2] == 'office' or discounted[2] == 'rural':
+            ax_pte.axvspan(discounted[0], discounted[1], color='grey', alpha=0.5, label="Operator Error")
+        if discounted[2] == 'urban':
+            ax_pte.axvspan(discounted[0], discounted[1], color='burlywood', alpha=0.5, label="Platform-Specific Miscalibration")
+        
+        ltr_stats = get_stats(ltr, discounted, marker_distances=markers['ltr_dist'])
+        virtr_stats = get_stats(virtr, discounted, marker_distances=markers['virtr_dist'])
+        
+        ltr_marker_rmse, ltr_marker_max = get_marker_stats(markers['ltr_dist'], markers['ltr_markers'])
+        virtr_marker_rmse, virtr_marker_max = get_marker_stats(markers['virtr_dist'], markers['virtr_markers'])
+        
+        # LT&R curve
+        ax_pte.plot(ltr_stats['common_x'], ltr_stats['average_dists'], linewidth=1.5, color='lightcoral',
+            label=(f"LT&R"))
+                    #label=(f"LT&R (RMSE={ltr_stats['discounted_rmse_all']:.3f} m, Max={ltr_stats['discounted_max_all']:.3f} m)"))
 
-summary_marker_box_plot(office_markers, urban_markers, rural_markers)
+        # LT&R markers
+        ax_pte.scatter(markers['ltr_dist'], markers['ltr_markers'][:,0], s=80, marker='x', linewidths=1.2, alpha=0.9, c='r', zorder=10,
+                       label=(f"LT&R Markers"))
+                               #label=(f"LT&R Markers (RMSE={ltr_marker_rmse:.3f} m, Max={ltr_marker_max:.3f} m)"))
+
+        for i in range(1, markers['ltr_markers'].shape[1]):
+            ax_pte.scatter(markers['ltr_dist'], markers['ltr_markers'][:,i], s=80, marker='x', linewidths=1.2, alpha=0.9, c='r', zorder=10)
+        
+        # VirT&R curve
+        ax_pte.plot(virtr_stats['common_x'], virtr_stats['average_dists'], linewidth=1.5, color='lightskyblue',
+            label=(f"VirLT&R"))
+                    #label=(f"VirT&R (RMSE={virtr_stats['discounted_rmse_all']:.3f} m, Max={virtr_stats['discounted_max_all']:.3f} m)"))
+
+        # VirT&R markers
+        ax_pte.scatter(markers['virtr_dist'], markers['virtr_markers'][:,0], s=80, marker='x', linewidths=1.2, alpha=0.9, c='b', zorder=10,
+                       label=(f"VirLT&R Markers"))
+                               #label=(f"VirT&R Markers (RMSE={virtr_marker_rmse:.3f} m, Max={virtr_marker_max:.3f} m)"))
+        for i in range(1, markers['virtr_markers'].shape[1]):
+            ax_pte.scatter(markers['virtr_dist'], markers['virtr_markers'][:,i], s=80, marker='x', linewidths=1.2, alpha=0.9, c='b', zorder=10)
+        
+        ax_pte.set_title(env_name, fontsize=label_fs)
+        ax_pte.grid(True, linestyle='--', alpha=0.5)
+        ax_pte.axhline(0, linestyle='--', linewidth=1.0, color='gray')
+        ax_pte.tick_params(axis='y', labelsize=tick_fs)
+        ax_pte.tick_params(axis='x', labelsize=tick_fs)
+        ax_pte.legend(loc='best', fontsize=legend_fs)
+
+    fig.supxlabel("Path Length (m)", fontsize=label_fs, y=0.02)
+    ylab = fig.supylabel("PTE (m)", fontsize=label_fs)
+    ylab.set_x(0.02)
+
+    # Maximize usable subplot area
+    fig.subplots_adjust(left=0.075, right=0.995, top=0.95, bottom=0.08, hspace=0.18)
+
+    save_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots")
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    filename = os.path.join(save_dir, "PTE_Summary.png")
+    fig.savefig(filename, dpi=300)
+    plt.show()
+
+
+# plot_experiment(office_LTR, office_VirTR, office_markers, office_discount)
+# plot_experiment(urban_LTR, urban_VirTR, urban_markers, urban_discount)
+# plot_experiment(rural_LTR, rural_VirTR, rural_markers, rural_discount)
+
+# summary_marker_box_plot(office_markers, urban_markers, rural_markers)
+summary_pte_plots(
+    office_LTR, office_VirTR, office_markers, office_discount,
+    urban_LTR, urban_VirTR, urban_markers, urban_discount,
+    rural_LTR, rural_VirTR, rural_markers, rural_discount
+)

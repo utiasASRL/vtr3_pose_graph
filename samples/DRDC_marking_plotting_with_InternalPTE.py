@@ -464,7 +464,7 @@ def summary_marker_box_plots(experiments):
 
         # Plot a box for each method in each path group.
         for m_label in all_method_labels:
-            pdb.set_trace()
+            #pdb.set_trace()
             bp = ax.boxplot(method_to_data[m_label],
                             positions=method_to_positions[m_label],
                             widths=group_width * 0.8,
@@ -496,9 +496,9 @@ def summary_marker_box_plots(experiments):
 
 if __name__ == "__main__":
     # Generate individual comparison plots for each experiment and path.
-    for exp_name, paths in EXPERIMENTS.items():
-        for path_name, cfg in paths.items():
-            process_experiment(exp_name, path_name, cfg)
+    # for exp_name, paths in EXPERIMENTS.items():
+    #     for path_name, cfg in paths.items():
+    #         process_experiment(exp_name, path_name, cfg)
 
     # Call the summary marker box plots function using the EXPERIMENTS dictionary.
     summary_marker_box_plots(EXPERIMENTS) 
