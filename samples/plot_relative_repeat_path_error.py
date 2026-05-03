@@ -119,7 +119,7 @@ if __name__ == '__main__':
             #  - top-right spans cols 2:4
             #  - bottom spans cols 1:3 (centered, i.e. half of each top column)
             gs = fig.add_gridspec(2, 4, height_ratios=[1, 1], width_ratios=[1, 1, 1, 1],
-                                  hspace=0.42, wspace=0.10)
+                                  hspace=0.5, wspace=0.10)
             axs = [
                     fig.add_subplot(gs[0, 0:2]),  # top-left (spans two cols)
                     fig.add_subplot(gs[0, 2:4]),  # top-right (spans two cols)
@@ -239,21 +239,21 @@ for i, (offline_graph_dir, run_set, omit_start, omit_end) in enumerate(zip(offli
 
 # Create a shared colorbar from the last scatter plot.
 if sc is not None:
-         # place colorbar to the right of the whole figure; shrink so it doesn't overlap
+         # place colorbar farther from the plots
          cbar = fig.colorbar(sc, ax=axs.tolist(), orientation='vertical')
-         cbar.set_label("Relative Lateral Error Between Repeats (m)", fontsize=14)
+         cbar.set_label("Relative Lateral Error Between Repeats (m)", fontsize=16)
          cbar.ax.tick_params(labelsize=12)
 
 # Shared axis labels and tighten layout so subplots are large and labels are near plots
-fig.supxlabel("x (m)", fontsize=14, x=0.47, y=0.02)
-ylab = fig.supylabel("y (m)", fontsize=14)
+fig.supxlabel("x (m)", fontsize=16, y=-0.02)
+ylab = fig.supylabel("y (m)", fontsize=16)
 ylab.set_x(0.08)  # move suylabel closer to plots
 
-# Adjust subplot margins to maximize plot area and keep labels readable
-fig.subplots_adjust(left=0.10, right=0.93, top=0.95, bottom=0.08, hspace=0.42, wspace=0.10)
+# Adjust subplot margins to maximize plot area and keep the bottom label visible
+#fig.subplots_adjust(left=0.10, right=0.93, top=0.95, bottom=0.12, hspace=0.22, wspace=0.10)
 
 # Set the overall figure title.
 #fig.suptitle("VirLTR (Pix4D) Relative Repeat Deviation", fontsize=18)
 
-#plt.tight_layout(pad=0.25)
+plt.tight_layout(pad=0.25)
 plt.show()
