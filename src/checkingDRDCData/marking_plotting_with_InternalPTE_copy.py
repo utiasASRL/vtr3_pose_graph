@@ -214,7 +214,7 @@ NeRF_VirRTR_parking = {
 # ========================================== Define Comparisons ==========================================
 EXPERIMENTS = {
     # lidar vs. virtual lidar with 3 methods
-    "LTR vs. VirLTR (Pix4D) vs. VirLTR (NeRF)": {
+    "LT&R vs. VirLT&R (Pix4D) vs. VirLT&R (NeRF)": {
         "Structured-C": dict(
             method_1="/home/desiree/ASRL/vtr3/temp/Experiment2/lidar/desi_LTR_Dome_Teach_from_her_laptop/graph", 
             method_2="/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/dome/graph",
@@ -279,7 +279,7 @@ EXPERIMENTS = {
         ),
     },
     # radar vs. virtual radar with 3 methods
-    "RTR vs. VirRTR (Pix4D) vs. VirRTR (NeRF)": {
+    "RT&R vs. VirRT&R (Pix4D) vs. VirRT&R (NeRF)": {
         "Structured-C": dict(
             method_1="/home/desiree/ASRL/vtr3/temp/Experiment2/radar/kstrongest/dome/graph",
             method_2="/home/desiree/ASRL/vtr3/temp/Experiment2/VirRTR/Pix4D/dome/graph/",
@@ -350,7 +350,7 @@ EXPERIMENTS = {
         ),
     },
     # for box plots
-    "VirLTR (Pix4D) vs. VirLTR (NeRF) vs. VirRTR (Pix4D) vs. VirRTR (NeRF)": {
+    "VirLT&R (Pix4D) vs. VirLT&R (NeRF) vs. VirRT&R (Pix4D) vs. VirRT&R (NeRF)": {
         "Structured-C": dict(
             method_1="/home/desiree/ASRL/vtr3/temp/Experiment2/lidar/desi_LTR_Dome_Teach_from_her_laptop/graph",
             method_2="/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/dome/graph",
@@ -747,12 +747,12 @@ def summary_cross_platform_route_box_plot(experiments):
     route_labels = ["Urban-C", "Structured-C", "Semi-Structured-C"]
 
     method_specs = [
-        ("LTR", "LTR vs. VirLTR (Pix4D) vs. VirLTR (NeRF)", "method_1_marker_errors"),
-        ("VirLTR (Pix4D)", "LTR vs. VirLTR (Pix4D) vs. VirLTR (NeRF)", "method_2_marker_errors"),
-        ("VirLTR (NeRF)", "LTR vs. VirLTR (Pix4D) vs. VirLTR (NeRF)", "method_3_marker_errors"),
-        ("RTR", "RTR vs. VirRTR (Pix4D) vs. VirRTR (NeRF)", "method_1_marker_errors"),
-        ("VirRTR (Pix4D)", "RTR vs. VirRTR (Pix4D) vs. VirRTR (NeRF)", "method_2_marker_errors"),
-        ("VirRTR (NeRF)", "RTR vs. VirRTR (Pix4D) vs. VirRTR (NeRF)", "method_3_marker_errors"),
+        ("LT&R", "LT&R vs. VirLT&R (Pix4D) vs. VirLT&R (NeRF)", "method_1_marker_errors"),
+        ("VirLT&R (Pix4D)", "LT&R vs. VirLT&R (Pix4D) vs. VirLT&R (NeRF)", "method_2_marker_errors"),
+        ("VirLT&R (NeRF)", "LT&R vs. VirLT&R (Pix4D) vs. VirLT&R (NeRF)", "method_3_marker_errors"),
+        ("RT&R", "RT&R vs. VirRT&R (Pix4D) vs. VirRT&R (NeRF)", "method_1_marker_errors"),
+        ("VirRT&R (Pix4D)", "RT&R vs. VirRT&R (Pix4D) vs. VirRT&R (NeRF)", "method_2_marker_errors"),
+        ("VirRT&R (NeRF)", "RT&R vs. VirRT&R (Pix4D) vs. VirRT&R (NeRF)", "method_3_marker_errors"),
     ]
     colors = ['red', 'blue', 'green', 'orange', 'purple', 'teal']
 
@@ -849,7 +849,7 @@ def summary_cross_platform_route_box_plot(experiments):
         os.makedirs(save_dir)
     filename = os.path.join(
         save_dir,
-        "LTR_VirLTR_RTR_VirRTR_Urban_Structured_SemiStructured_marker_summary.png"
+        "LT&R_VirLT&R_RT&R_VirRT&R_Urban_Structured_SemiStructured_marker_summary.png"
     )
     fig.savefig(filename, dpi=300, bbox_inches="tight")
     plt.show()
@@ -860,7 +860,7 @@ def summary_lidar_pte_plots(experiments):
     Each subplot shows the methods available for that route.
     """
     routes = ["Structured-C", "Urban-C", "Semi-Structured-C", "Rural-C"]
-    exp_name = "LTR vs. VirLTR (Pix4D) vs. VirLTR (NeRF)"
+    exp_name = "LT&R vs. VirLT&R (Pix4D) vs. VirLT&R (NeRF)"
 
     fig, axs = plt.subplots(4, 1, figsize=(18, 10))
     axs = np.atleast_1d(axs).flatten()
@@ -899,7 +899,7 @@ def summary_lidar_pte_plots(experiments):
             if not repeats:
                 continue
 
-            label_name = ["LTR", "VirLTR (Pix4D)", "VirLTR (NeRF)"][m - 1] if m <= 3 else f"Method {m}"
+            label_name = ["LT&R", "VirLT&R (Pix4D)", "VirLT&R (NeRF)"][m - 1] if m <= 3 else f"Method {m}"
             color = default_pte_colors[(m - 1) % len(default_pte_colors)]
 
             min_end = min(r[2][-1] for r in repeats if r[2].size > 0)
@@ -942,7 +942,7 @@ def summary_lidar_pte_plots(experiments):
         ax_pte.axhline(0, linestyle='--', linewidth=1.0, color='gray')
         ax_pte.legend(loc='lower right', fontsize=10)
 
-    fig.suptitle("LiDAR PTE Summary: LTR vs. VirLTR (Pix4D) vs. VirLTR (NeRF)", fontsize=16)
+    fig.suptitle("LiDAR PTE Summary: LT&R vs. VirLT&R (Pix4D) vs. VirLT&R (NeRF)", fontsize=16)
     fig.supxlabel("Path Length (m)", fontsize=12)
     fig.supylabel("PTE (m)", fontsize=12)
     plt.tight_layout(rect=[0.03, 0.03, 1, 0.95])
@@ -957,11 +957,11 @@ def summary_lidar_pte_plots(experiments):
 def summary_radar_pte_plots(experiments):
     """
     Create a single figure with 2 subplots showing PTE curves for Radar across selected routes.
-    Each subplot shows: RTR vs. VirRTR (Pix4D) vs. VirRTR (NeRF)
+    Each subplot shows: RT&R vs. VirRT&R (Pix4D) vs. VirRT&R (NeRF)
     """
     routes = ["Structured-C", "Urban-C"]
     route_labels = ["Structured-C", "Urban-C"]
-    exp_name = "RTR vs. VirRTR (Pix4D) vs. VirRTR (NeRF)"
+    exp_name = "RT&R vs. VirRT&R (Pix4D) vs. VirRT&R (NeRF)"
     
     fig, axs = plt.subplots(2, 1, figsize=(14, 5))
     axs = np.atleast_1d(axs)
@@ -976,7 +976,7 @@ def summary_radar_pte_plots(experiments):
         if not cfg:
             continue
         
-        method_labels = ["RTR", "VirRTR (Pix4D)", "VirRTR (NeRF)"]
+        method_labels = ["RT&R", "VirRT&R (Pix4D)", "VirRT&R (NeRF)"]
         
         for m in [1, 2, 3]:
             graph = build_graph(cfg[f"method_{m}"])
@@ -1037,7 +1037,7 @@ def summary_radar_pte_plots(experiments):
         ax_pte.axhline(0, linestyle='--', linewidth=1.0, color='gray')
         ax_pte.legend(loc='lower right', fontsize=10)
     
-    fig.suptitle("Radar PTE Summary: RTR vs. VirRTR (Pix4D) vs. VirRTR (NeRF)", fontsize=16)
+    fig.suptitle("Radar PTE Summary: RT&R vs. VirRT&R (Pix4D) vs. VirRT&R (NeRF)", fontsize=16)
     fig.supxlabel("Path Length (m)", fontsize=12)
     fig.supylabel("PTE (m)", fontsize=12)
     plt.tight_layout(rect=[0.03, 0.03, 1, 0.93])
