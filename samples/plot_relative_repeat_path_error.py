@@ -57,8 +57,9 @@ def plot_paths(ax, test_graph, run1, run2, path_matrix1, omit_start, omit_end, v
     ax_error.set_ylim(min(dist) - 0.1, max(dist) + 0.1)  # Set y-axis limits with a small margin
 
     c = [abs(v) for v in dist]
-    ax.scatter(x1, y1, label=f"Repeat {run1}")
-    sc = ax.scatter(x2, y2, label=f"Repeat {run2}", c=c, vmin=vmin, vmax=vmax)
+    # larger markers for visibility
+    ax.scatter(x1, y1, label=f"Repeat {run1}", s=36)
+    sc = ax.scatter(x2, y2, label=f"Repeat {run2}", c=c, vmin=vmin, vmax=vmax, s=48, cmap='viridis')
     ax.axis('equal')
     ax.set_xlabel('x (m)', fontsize=18)
     ax.set_ylabel('y (m)', fontsize=18)
@@ -69,71 +70,73 @@ def plot_paths(ax, test_graph, run1, run2, path_matrix1, omit_start, omit_end, v
 
 if __name__ == '__main__':
      
-#      offline_graph_dirs = [
-#           #     "/home/asrl/ASRL/vtr3/temp/virtr_office2/graph",
-#           #     "/home/asrl/ASRL/vtr3/temp/virtr_urban/graph",
-#           #     "/home/asrl/ASRL/vtr3/temp/virtr_rural/graph",
-#               "/home/asrl/ASRL/vtr3/temp/vir_office_clicked/graph",
-#               "/home/asrl/ASRL/vtr3/temp/new_urban/graph",
-#               "/home/asrl/ASRL/vtr3/temp/vir_rural_clicked/graph"#,
-#           #     "/home/asrl/ASRL/vtr3/temp/vir_rural_driven/graph"
-
-#      ]
-#      runs = [
-#           #    (20,21), LTR OFFICE
-#           #    (1,2,3,5), #LTR URBAN
-#           #    (4,13,14), #LTR RURAL
-#             (3,4,5,7), #VIRTR OFFICE
-#             (1,4,6,7),   #VIRTR URBAN
-#             (1,2), # VIRTR RURAL CLICKED
-#           #   (1) # VIRTR RURAL DRIVEN
-#      ] 
-
      offline_graph_dirs = [
-            "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/parking/graph",
-            "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/dome/graph",
-            "/home/desiree/ASRL/vtr3/temp/Experiment2/VirRTR/Pix4D/dome/graph"
+          #     "/home/asrl/ASRL/vtr3/temp/virtr_office2/graph",
+          #     "/home/asrl/ASRL/vtr3/temp/virtr_urban/graph",
+          #     "/home/asrl/ASRL/vtr3/temp/virtr_rural/graph",
+              "/home/desiree/ASRL/vtr3/data/relative_repeat_data/vir_office_clicked/graph",
+              "/home/desiree/ASRL/vtr3/data/relative_repeat_data/new_urban/graph",
+              "/home/desiree/ASRL/vtr3/data/relative_repeat_data/vir_rural_clicked/graph"#,
+          #     "/home/asrl/ASRL/vtr3/temp/vir_rural_driven/graph"
+
      ]
      runs = [
-            (4, 7, 8, 9, 10), 
-            (1, 3, 4, 5, 6),  
-            (1, 2, 4, 5, 6)
-     ]
-     
+          #    (20,21), LTR OFFICE
+          #    (1,2,3,5), #LTR URBAN
+          #    (4,13,14), #LTR RURAL
+            (3,4,5,7), #VIRTR OFFICE
+            (1,4,6,7),   #VIRTR URBAN
+            (1,2), # VIRTR RURAL CLICKED
+          #   (1) # VIRTR RURAL DRIVEN
+     ] 
+
      names = [
             "Urban-R (VirLT&R)",
             "Structured-R (VirLT&R)",
             "Sparse-R (VirLT&R)"
      ]
 
+#      offline_graph_dirs = [
+#             "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/parking/graph",
+#             "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/dome/graph",
+#             "/home/desiree/ASRL/vtr3/temp/Experiment2/VirRTR/Pix4D/dome/graph"
+#      ]
+#      runs = [
+#             (4, 7, 8, 9, 10), 
+#             (1, 3, 4, 5, 6),  
+#             (1, 2, 4, 5, 6)
+#      ]
+     
+#      names = [
+#             "Urban-R (VirLT&R)",
+#             "Structured-R (VirLT&R)",
+#             "Sparse-R (VirLT&R)"
+#      ]
+
      omit_starts = [0, 0, 0, 0]  # Number of vertices to omit from the start for each graph
      omit_ends = [2, 2, 2, 2]    # Number of vertices to omit from the end for each graph
 
      # Determine grid layout with custom 2-top + 1-bottom arrangement for 3 plots
      n_graphs = len(offline_graph_dirs)
-     fig = plt.figure(figsize=(18, 12))
+     fig = plt.figure(figsize=(18, 6))
 
      if n_graphs == 3:
-            # Use a 2 x 4 GridSpec so:
-            #  - top-left spans cols 0:2
-            #  - top-right spans cols 2:4
-            #  - bottom spans cols 1:3 (centered, i.e. half of each top column)
-            gs = fig.add_gridspec(2, 4, height_ratios=[1, 1], width_ratios=[1, 1, 1, 1],
-                                  hspace=0.5, wspace=0.10)
-            axs = [
-                    fig.add_subplot(gs[0, 0:2]),  # top-left (spans two cols)
-                    fig.add_subplot(gs[0, 2:4]),  # top-right (spans two cols)
-                    fig.add_subplot(gs[1, 1:3])   # bottom centered (spans middle two cols)
-            ]
+           # single row with 3 columns
+           gs = fig.add_gridspec(1, 3, width_ratios=[1, 1, 1], hspace=0.20, wspace=0.18)
+           axs = [
+                   fig.add_subplot(gs[0, 0]),
+                   fig.add_subplot(gs[0, 1]),
+                   fig.add_subplot(gs[0, 2])
+           ]
      else:
-            n_cols = min(2, n_graphs)
-            n_rows = math.ceil(n_graphs / n_cols)
-            gs = fig.add_gridspec(n_rows, n_cols, hspace=0.35, wspace=0.3)
-            axs = [fig.add_subplot(gs[i // n_cols, i % n_cols]) for i in range(n_graphs)]
-
+           n_cols = min(2, n_graphs)
+           n_rows = math.ceil(n_graphs / n_cols)
+           gs = fig.add_gridspec(n_rows, n_cols, hspace=0.35, wspace=0.3)
+           axs = [fig.add_subplot(gs[i // n_cols, i % n_cols]) for i in range(n_graphs)]
+ 
      axs = np.array(axs)
 
-     plt.rcParams.update({'font.size': 18})  # Set default font size
+     plt.rcParams.update({'font.size': 16})  # Set default font size (reduced by 2)
 
 # First pass: compute global min and max error across all comparison runs for color scaling
      all_distances = []
@@ -176,7 +179,9 @@ for i, (offline_graph_dir, run_set, omit_start, omit_end) in enumerate(zip(offli
                      pt = v.T_v_w.r_ba_ina()
                      x_base.append(pt[0])
                      y_base.append(pt[1])
-         ax.scatter(x_base, y_base, color='black')
+       #   # draw teach/base path as a line (avoid large black markers)
+       #   if x_base and y_base:
+       #       ax.plot(x_base, y_base, color='black', linewidth=1.5)
 
          # Compute the reference path matrix.
          base_path_matrix = vtr_path.path_to_matrix(
@@ -209,9 +214,28 @@ for i, (offline_graph_dir, run_set, omit_start, omit_end) in enumerate(zip(offli
                             rmse_run, max_error_run = 0, 0
                      # Plot error curve for this run.
                      ax_error.plot(t_run, dist)
+
                      # Scatter positions on the map colored by error magnitude.
-                     sc = ax.scatter(x_run, y_run, c=[abs(val) for val in dist],
-                                           vmin=vmin, vmax=vmax, cmap='viridis')
+                     # Subsample scatter positions to avoid over-plotting (keep ~800 pts max)
+                     x_arr = np.asarray(x_run)
+                     y_arr = np.asarray(y_run)
+                     dist_arr = np.asarray(dist)
+                     n_pts = x_arr.size
+                     max_pts = 500
+                     if n_pts > max_pts:
+                         stride = int(np.ceil(n_pts / float(max_pts)))
+                         idx = np.arange(0, n_pts, stride)
+                     else:
+                         idx = np.arange(n_pts)
+                     x_sub = x_arr[idx]
+                     y_sub = y_arr[idx]
+                     dist_sub = dist_arr[idx]
+                     # Scatter positions on the map colored by error magnitude (bigger markers for visibility)
+                     sc = ax.scatter(
+                         x_sub, y_sub, c=np.abs(dist_sub),
+                         vmin=vmin, vmax=vmax, cmap='viridis',
+                         s=75, linewidths=0, alpha=0.9
+                     )
          # Compute cumulative error metrics over all comparison runs.
          if cumulative_distances:
                      cumulative_rmse = np.sqrt(np.mean(np.array(cumulative_distances) ** 2))
@@ -232,25 +256,33 @@ for i, (offline_graph_dir, run_set, omit_start, omit_end) in enumerate(zip(offli
          ax.axis('equal')
          # Removed individual x and y labels for subplots
          ax.grid(True, which='both', color='lightgrey', linestyle='-', linewidth=0.5, zorder=-1)
-         ax.tick_params(axis='both', which='major', labelsize=16)
+         ax.tick_params(axis='both', which='major', labelsize=12)  # reduced by 2
 
          # Add subplot name below the plot
-         ax.set_xlabel(names[i], fontsize=16, labelpad=20)
+         ax.set_xlabel(names[i], fontsize=12, labelpad=20)
 
 # Create a shared colorbar from the last scatter plot.
 if sc is not None:
-         # place colorbar farther from the plots
-         cbar = fig.colorbar(sc, ax=axs.tolist(), orientation='vertical')
-         cbar.set_label("Relative Lateral Error Between Repeats (m)", fontsize=16)
-         cbar.ax.tick_params(labelsize=12)
+         # Reserve margins and compute exact colorbar axes so it won't overlap subplots.
+         # Keep subplot area to the left (right margin below), then put cax to the right.
+         CB_RIGHT = 0.915           # left position of colorbar axes (figure coords)
+         CB_WIDTH = 0.02
+         bottom_var = 0.14
+         top_var = 0.95
+         cax = fig.add_axes([CB_RIGHT, bottom_var, CB_WIDTH, top_var - bottom_var])
+         cbar = fig.colorbar(sc, cax=cax, orientation='vertical')
+         cbar.set_label("Relative Lateral Error Between Repeats (m)", fontsize=12, labelpad=12)
+         cbar.ax.tick_params(labelsize=10)
 
 # Shared axis labels and tighten layout so subplots are large and labels are near plots
-fig.supxlabel("x (m)", fontsize=16, y=-0.02)
-ylab = fig.supylabel("y (m)", fontsize=16)
-ylab.set_x(0.08)  # move suylabel closer to plots
+bottom_var = 0.14
+top_var = 0.95
+fig.supxlabel("x (m)", fontsize=14, y=bottom_var - 0.08)    # push x-label further down (moved more)
+ylab = fig.supylabel("y (m)", fontsize=12)
+ylab.set_x(0.00)  # move y-label further left
 
-# Adjust subplot margins to maximize plot area and keep the bottom label visible
-#fig.subplots_adjust(left=0.10, right=0.93, top=0.95, bottom=0.12, hspace=0.22, wspace=0.10)
+# Reserve space on the right for the colorbar (we placed cax at 0.915), and room at bottom for x label.
+fig.subplots_adjust(left=0.06, right=0.90, top=top_var, bottom=bottom_var, hspace=0.22, wspace=0.18)
 
 # Set the overall figure title.
 #fig.suptitle("VirLTR (Pix4D) Relative Repeat Deviation", fontsize=18)

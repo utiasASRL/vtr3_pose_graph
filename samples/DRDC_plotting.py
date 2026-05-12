@@ -2,6 +2,7 @@ import os
 import pickle as pkl
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 
 import pdb
 
@@ -310,8 +311,10 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
         }
     }
     
-    colors = ['r', 'b', 'green', 'orange']
-    
+    # use a single base color (C1) with two different alpha levels for the two methods
+    base_color = 'blue'
+    method_alphas = [0.45, 0.85]
+ 
     for exp_name, paths in experiments_data.items():
         per_path_method_data = []
         path_names = []
@@ -344,8 +347,11 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
         # Method labels
         all_method_labels = ["LT&R", "VirLT&R (Pix4D)"]
         num_methods = len(all_method_labels)
-        method_color = {label: colors[i % len(colors)]
-                       for i, label in enumerate(all_method_labels)}
+        # build a color map per method using the same base color with different alpha
+        method_color = {
+            label: mcolors.to_rgba(base_color, method_alphas[i % len(method_alphas)])
+            for i, label in enumerate(all_method_labels)
+        }
         
         # Define box group configuration (tighter spacing)
         group_width = 0.12
@@ -353,9 +359,9 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
         
         # Larger text settings for this figure
         title_fs = 22
-        label_fs = 22
-        tick_fs = 20
-        legend_fs = 18
+        label_fs = 16
+        tick_fs = 14
+        legend_fs = 14
 
         # Create figure
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -364,7 +370,7 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
         #ax.set_title(f"{exp_name} – Marker Errors Summary", fontsize=title_fs)
         ax.set_ylabel("Marker Error (m)")
         ax.grid(True, linestyle="--", alpha=0.5)
-        ax.axhline(0, linestyle="--", linewidth=1.5, color="darkgrey")
+        # ax.axhline(0, linestyle='--', linewidth=2, color='darkgrey')  # moved below to draw in front
         ax.tick_params(axis='y', labelsize=tick_fs)
         
         # Collect positions and data for each method
@@ -390,12 +396,15 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
                 patch_artist=True,
                 manage_ticks=False
             )
-            for patch in bp["boxes"]:
+            for patch in bp['boxes']:
                 patch.set_facecolor(method_color[m_label])
                 patch.set_edgecolor("black")
             for element in ("whiskers", "caps", "medians"):
                 for artist in bp[element]:
                     artist.set_color("black")
+
+        # Draw zero-reference line on top of boxplots
+        ax.axhline(0, linestyle='--', linewidth=2, color='darkgrey', zorder=10)
 
         # Set x-axis ticks
         ax.set_xticks(x_ticks)
@@ -407,7 +416,7 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
             Patch(facecolor=method_color[m_label], edgecolor='black', label=m_label)
             for m_label in all_method_labels
         ]
-        ax.legend(handles=legend_handles, loc='best', fontsize=legend_fs)
+        ax.legend(handles=legend_handles, fontsize=legend_fs)
 
         plt.tight_layout()
         # Optional if labels are still cramped:
@@ -415,13 +424,12 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
         plt.savefig('box_plot', dpi=300, bbox_inches='tight')
         plt.show()
 
-
 def plot_experiment(ltr, virtr, markers, discounted):
     # Larger text settings for this figure
-    title_fs = 20
+    title_fs = 18
     label_fs = 20
-    tick_fs = 18
-    legend_fs = 12
+    tick_fs = 16
+    legend_fs = 14
     fig_pte, ax_pte = plt.subplots()
     ax_pte.set_xlabel("Path Length (m)", fontsize=label_fs)
     ax_pte.set_ylabel("PTE (m)", fontsize=label_fs)
@@ -477,10 +485,9 @@ def plot_experiment(ltr, virtr, markers, discounted):
         ax_pte.scatter(markers['virtr_dist'], markers['virtr_markers'][:,i], s=80, marker='x', linewidths=1.2, alpha=0.9, c='b', zorder=10)
     
 
-    ax_pte.legend(fontsize=legend_fs)
+    ax_pte.legend(loc='bottom left', fontsize=legend_fs)
     plt.show()
     fig_pte.savefig(discounted[2], dpi=300, bbox_inches='tight')
-
 
 def summary_pte_plots(office_ltr, office_virtr, office_markers, office_discount,
                       urban_ltr, urban_virtr, urban_markers, urban_discount,
@@ -498,9 +505,9 @@ def summary_pte_plots(office_ltr, office_virtr, office_markers, office_discount,
     fig, axs = plt.subplots(3, 1, figsize=(14, 12))
     axs = np.atleast_1d(axs).flatten()
     
-    title_fs = 20
-    label_fs = 18
-    tick_fs = 16
+    title_fs = 18
+    label_fs = 12
+    tick_fs = 12
     legend_fs = 10
     
     for idx, (env_name, ltr, virtr, markers, discounted) in enumerate(environments):
@@ -543,19 +550,30 @@ def summary_pte_plots(office_ltr, office_virtr, office_markers, office_discount,
         for i in range(1, markers['virtr_markers'].shape[1]):
             ax_pte.scatter(markers['virtr_dist'], markers['virtr_markers'][:,i], s=80, marker='x', linewidths=1.2, alpha=0.9, c='b', zorder=10)
         
-        ax_pte.set_title(env_name, fontsize=label_fs)
+        ax_pte.set_title(env_name, fontsize=label_fs, x=0.5)
         ax_pte.grid(True, linestyle='--', alpha=0.5)
         ax_pte.axhline(0, linestyle='--', linewidth=1.0, color='gray')
         ax_pte.tick_params(axis='y', labelsize=tick_fs)
         ax_pte.tick_params(axis='x', labelsize=tick_fs)
-        ax_pte.legend(loc='best', fontsize=legend_fs)
+        if idx == 0:
+            legend_loc = 'lower right'
+        elif idx == 1:
+            legend_loc = 'lower left'
+        elif idx == 2:
+            legend_loc = 'upper left'
 
-    fig.supxlabel("Path Length (m)", fontsize=label_fs, y=0.02)
+        ax_pte.legend(loc=legend_loc, fontsize=legend_fs)
+
+    # Keep these in sync with subplots_adjust below
+    LEFT_MARGIN = 0.06
+    RIGHT_MARGIN = 0.995
+    center_x = (LEFT_MARGIN + RIGHT_MARGIN) / 2.0
+
+    fig.supxlabel("Path Length (m)", fontsize=label_fs, y=0.02, x=center_x)
     ylab = fig.supylabel("PTE (m)", fontsize=label_fs)
-    ylab.set_x(0.02)
+    ylab.set_x(0.008)
 
-    # Maximize usable subplot area
-    fig.subplots_adjust(left=0.075, right=0.995, top=0.95, bottom=0.08, hspace=0.18)
+    fig.subplots_adjust(left=LEFT_MARGIN, right=RIGHT_MARGIN, top=0.95, bottom=0.08, hspace=0.24)
 
     save_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots")
     if not os.path.exists(save_dir):
@@ -569,9 +587,9 @@ def summary_pte_plots(office_ltr, office_virtr, office_markers, office_discount,
 # plot_experiment(urban_LTR, urban_VirTR, urban_markers, urban_discount)
 # plot_experiment(rural_LTR, rural_VirTR, rural_markers, rural_discount)
 
-# summary_marker_box_plot(office_markers, urban_markers, rural_markers)
-summary_pte_plots(
-    office_LTR, office_VirTR, office_markers, office_discount,
-    urban_LTR, urban_VirTR, urban_markers, urban_discount,
-    rural_LTR, rural_VirTR, rural_markers, rural_discount
-)
+summary_marker_box_plot(office_markers, urban_markers, rural_markers)
+# summary_pte_plots(
+#     office_LTR, office_VirTR, office_markers, office_discount,
+#     urban_LTR, urban_VirTR, urban_markers, urban_discount,
+#     rural_LTR, rural_VirTR, rural_markers, rural_discount
+# )
