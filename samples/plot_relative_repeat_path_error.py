@@ -61,8 +61,9 @@ def plot_paths(ax, test_graph, run1, run2, path_matrix1, omit_start, omit_end, v
     ax.scatter(x1, y1, label=f"Repeat {run1}", s=36)
     sc = ax.scatter(x2, y2, label=f"Repeat {run2}", c=c, vmin=vmin, vmax=vmax, s=48, cmap='viridis')
     ax.axis('equal')
-    ax.set_xlabel('x (m)', fontsize=18)
-    ax.set_ylabel('y (m)', fontsize=18)
+    # move axis labels further from subplot for readability
+    ax.set_xlabel('x (m)', fontsize=18, labelpad=22)
+    ax.set_ylabel('y (m)', fontsize=18, labelpad=22)
     ax.grid(True, which='both', color='lightgrey', linestyle='-', linewidth=0.5, zorder=-1)
     ax.tick_params(axis='both', which='major', labelsize=16)  # Increase font size of axis numbers
     return sc
@@ -138,26 +139,59 @@ if __name__ == '__main__':
 
      plt.rcParams.update({'font.size': 16})  # Set default font size (reduced by 2)
 
-# First pass: compute global min and max error across all comparison runs for color scaling
+    # Colorbar scaling config:
+    # - If USE_PERCENTILE_SCALING is True, use the (LOWER_PCT, UPPER_PCT) percentiles of the pooled errors.
+    # - You can also set USER_VMIN/USER_VMAX to override.
+     USE_PERCENTILE_SCALING = True
+     LOWER_PCT = 0.0   # small pct to ignore extreme low outliers
+     UPPER_PCT = 99.0  # high pct to ignore extreme high outliers
+     USER_VMIN = None  # set e.g. 0.0 to floor, or None to use computed
+     USER_VMAX = None
+
+ # First pass: compute global min and max error across all comparison runs for color scaling
      all_distances = []
      for offline_graph_dir, run_set, omit_start, omit_end in zip(offline_graph_dirs, runs, omit_starts, omit_ends):
-            factory = Rosbag2GraphFactory(offline_graph_dir)
-            test_graph = factory.buildGraph()
-            g_utils.set_world_frame(test_graph, test_graph.root)
-            # Compute the reference path from the first run in the tuple.
-            base_path_matrix = vtr_path.path_to_matrix(
-                    test_graph, TemporalIterator(test_graph.get_vertex((run_set[0], 0)))
-            )
-            # Loop over all comparison runs (all runs after the first)
-            for run in run_set[1:]:
-                    v_start = test_graph.get_vertex((run, 0))
-                    vertices = list(TemporalIterator(v_start))
-                    for i, (v, e) in enumerate(vertices):
-                           if i < omit_start or i >= len(vertices) - omit_end:
-                                   continue
-                           d = abs(vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), base_path_matrix))
-                           all_distances.append(d)
-     vmin, vmax = min(all_distances), max(all_distances)
+             factory = Rosbag2GraphFactory(offline_graph_dir)
+             test_graph = factory.buildGraph()
+             g_utils.set_world_frame(test_graph, test_graph.root)
+             # Compute the reference path from the first run in the tuple.
+             base_path_matrix = vtr_path.path_to_matrix(
+                     test_graph, TemporalIterator(test_graph.get_vertex((run_set[0], 0)))
+             )
+             # Loop over all comparison runs (all runs after the first)
+             for run in run_set[1:]:
+                     v_start = test_graph.get_vertex((run, 0))
+                     vertices = list(TemporalIterator(v_start))
+                     for i, (v, e) in enumerate(vertices):
+                            if i < omit_start or i >= len(vertices) - omit_end:
+                                    continue
+                            d = abs(vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), base_path_matrix))
+                            all_distances.append(d)
+    # compute robust color limits
+     all_arr = np.asarray(all_distances)
+     if all_arr.size == 0:
+        vmin, vmax = 0.0, 1.0
+     else:
+        vmin_raw, vmax_raw = float(all_arr.min()), float(all_arr.max())
+        if USE_PERCENTILE_SCALING:
+            try:
+                p_low, p_high = np.percentile(all_arr, [LOWER_PCT, UPPER_PCT])
+                vmin, vmax = float(p_low), float(p_high)
+                # if percentiles collapse, fall back to raw range
+                if np.isclose(vmin, vmax):
+                    vmin, vmax = vmin_raw, vmax_raw
+            except Exception:
+                vmin, vmax = vmin_raw, vmax_raw
+        else:
+            vmin, vmax = vmin_raw, vmax_raw
+     # apply user overrides last
+     if USER_VMIN is not None:
+         vmin = float(USER_VMIN)
+     if USER_VMAX is not None:
+         vmax = float(USER_VMAX)
+     # guard
+     if vmin >= vmax:
+        vmax = vmin + 1e-6
 
 # Second pass: for each graph, plot the paths and cumulative error metric
 # We also produce an error plot for each graph in a separate window.
@@ -221,7 +255,7 @@ for i, (offline_graph_dir, run_set, omit_start, omit_end) in enumerate(zip(offli
                      y_arr = np.asarray(y_run)
                      dist_arr = np.asarray(dist)
                      n_pts = x_arr.size
-                     max_pts = 500
+                     max_pts = n_pts
                      if n_pts > max_pts:
                          stride = int(np.ceil(n_pts / float(max_pts)))
                          idx = np.arange(0, n_pts, stride)
@@ -256,30 +290,83 @@ for i, (offline_graph_dir, run_set, omit_start, omit_end) in enumerate(zip(offli
          ax.axis('equal')
          # Removed individual x and y labels for subplots
          ax.grid(True, which='both', color='lightgrey', linestyle='-', linewidth=0.5, zorder=-1)
-         ax.tick_params(axis='both', which='major', labelsize=12)  # reduced by 2
+         ax.tick_params(axis='both', which='major', labelsize=14)  # reduced by 2
 
          # Add subplot name below the plot
-         ax.set_xlabel(names[i], fontsize=12, labelpad=20)
+         # move subplot title/label further away from the axis ticks
+         ax.set_xlabel(names[i], fontsize=16, labelpad=30)
 
-# Create a shared colorbar from the last scatter plot.
+# Create a shared colorbar (dynamically placed to match subplot top/bottom)
 if sc is not None:
-         # Reserve margins and compute exact colorbar axes so it won't overlap subplots.
-         # Keep subplot area to the left (right margin below), then put cax to the right.
-         CB_RIGHT = 0.915           # left position of colorbar axes (figure coords)
-         CB_WIDTH = 0.02
-         bottom_var = 0.14
-         top_var = 0.95
-         cax = fig.add_axes([CB_RIGHT, bottom_var, CB_WIDTH, top_var - bottom_var])
-         cbar = fig.colorbar(sc, cax=cax, orientation='vertical')
-         cbar.set_label("Relative Lateral Error Between Repeats (m)", fontsize=12, labelpad=12)
-         cbar.ax.tick_params(labelsize=10)
+    # initial colorbar axes — will be repositioned by the resize handler
+    cax = fig.add_axes([0.92, 0.14, 0.02, 0.8])
+    cbar = fig.colorbar(sc, cax=cax, orientation='vertical', extend='both')
+    try:
+        cbar.mappable.set_clim(vmin, vmax)
+    except Exception:
+        pass
+    cbar.set_label("Relative Lateral Error Between Repeats (m)", fontsize=16, labelpad=12)
+    cbar.ax.tick_params(labelsize=12)
+
+    # dynamic layout parameters
+    CB_PAD = 0.01        # gap between rightmost subplot and colorbar (figure coords)
+    CB_WIDTH = 0.02      # colorbar width (figure coords)
+    YLAB_OFFSET = 0.06   # increase offset so shared y-label sits further left of subplots
+
+    # create shared y-label (we'll reposition it dynamically)
+    ylab = fig.supylabel("y (m)", fontsize=16)
+
+    def _update_colorbar_and_ylab(event=None):
+        """Reposition colorbar to match subplot vertical span and lock y-label to leftmost subplot."""
+        try:
+            # compute vertical span of all subplots in figure coords
+            y0 = min(a.get_position().y0 for a in axs)
+            y1 = max(a.get_position().y1 for a in axs)
+            last_pos = axs[-1].get_position()
+            left_pos = min(a.get_position().x0 for a in axs)
+        except Exception:
+            # fall back to sensible defaults
+            y0, y1 = 0.14, 0.95
+            last_pos = axs[-1].get_position()
+            left_pos = min(a.get_position().x0 for a in axs) if 'axs' in globals() else 0.06
+
+        # compute colorbar left x and clamp inside figure
+        cb_x = last_pos.x1 + CB_PAD
+        if cb_x + CB_WIDTH > 0.995:
+            cb_x = 0.995 - CB_WIDTH
+        if cb_x < 0.0:
+            cb_x = 0.0
+
+        # apply new colorbar axes position (left, bottom, width, height)
+        cax.set_position([cb_x, y0, CB_WIDTH, max(1e-6, y1 - y0)])
+
+        # reposition y-label a fixed offset left of the leftmost subplot
+        new_ylab_x = max(0.0, left_pos - YLAB_OFFSET)
+        try:
+            ylab.set_x(new_ylab_x)
+        except Exception:
+            pass
+
+        # trigger redraw
+        fig.canvas.draw_idle()
+
+    # connect to resize event so colorbar & y-label track figure size changes
+    try:
+        fig.canvas.mpl_connect("resize_event", _update_colorbar_and_ylab)
+    except Exception:
+        pass
+
+    # initial positioning call
+    _update_colorbar_and_ylab(None)
 
 # Shared axis labels and tighten layout so subplots are large and labels are near plots
 bottom_var = 0.14
 top_var = 0.95
-fig.supxlabel("x (m)", fontsize=14, y=bottom_var - 0.08)    # push x-label further down (moved more)
-ylab = fig.supylabel("y (m)", fontsize=12)
-ylab.set_x(0.00)  # move y-label further left
+# push shared x-label further down so it's farther from the subplots
+fig.supxlabel("x (m)", fontsize=16, y=bottom_var - 0.12)    # push x-label further down (moved more)
+# ylab already created above when cbar exists; if not, create now
+if 'ylab' not in globals():
+    ylab = fig.supylabel("y (m)", fontsize=16)
 
 # Reserve space on the right for the colorbar (we placed cax at 0.915), and room at bottom for x label.
 fig.subplots_adjust(left=0.06, right=0.90, top=top_var, bottom=bottom_var, hspace=0.22, wspace=0.18)

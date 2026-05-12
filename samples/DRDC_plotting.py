@@ -359,9 +359,9 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
         
         # Larger text settings for this figure
         title_fs = 22
-        label_fs = 16
-        tick_fs = 14
-        legend_fs = 14
+        label_fs = 20
+        tick_fs = 18
+        legend_fs = 18
 
         # Create figure
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -587,9 +587,9 @@ def summary_pte_plots(office_ltr, office_virtr, office_markers, office_discount,
 # plot_experiment(urban_LTR, urban_VirTR, urban_markers, urban_discount)
 # plot_experiment(rural_LTR, rural_VirTR, rural_markers, rural_discount)
 
-summary_marker_box_plot(office_markers, urban_markers, rural_markers)
-# summary_pte_plots(
-#     office_LTR, office_VirTR, office_markers, office_discount,
-#     urban_LTR, urban_VirTR, urban_markers, urban_discount,
-#     rural_LTR, rural_VirTR, rural_markers, rural_discount
-# )
+# summary_marker_box_plot(office_markers, urban_markers, rural_markers)
+summary_pte_plots(
+    office_LTR, office_VirTR, office_markers, office_discount,
+    urban_LTR, urban_VirTR, urban_markers, urban_discount,
+    rural_LTR, rural_VirTR, rural_markers, rural_discount
+)
