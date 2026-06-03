@@ -11,7 +11,7 @@ from vtr_pose_graph.graph_iterators import TemporalIterator, PriviledgedIterator
 import vtr_pose_graph.graph_utils as g_utils
 from pylgmath import Transformation
 
-sys.path.append('/home/desiree/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/src')
+# sys.path.append('/home/desiree/ASRL/vtr3/vtr3_posegraph_tools/vtr3_pose_graph/src')
 
 if __name__ == '__main__':
 
@@ -88,7 +88,8 @@ if __name__ == '__main__':
             pcd.paint_uniform_color((1.0, 0.0, 0.0))  # Always green
 
             # Create coordinate frame for the vertex
-            frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=robot_position)
+            frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=1.0, origin=[0, 0, 0])
+            frame.transform(np.linalg.inv(vertex.T_v_w.matrix()))
 
             if first:
                 first = False
