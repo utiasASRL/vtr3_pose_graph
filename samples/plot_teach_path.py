@@ -15,45 +15,6 @@ import pylgmath
 
 import pdb
 
-def curvature_2d(points):
-    """
-    Compute curvature along a 2D path using 3-point circle method.
-
-    points: (N, 2) array of [x, y]
-    returns: (N,) array of curvature values
-    """
-    points = np.asarray(points)
-    N = len(points)
-    kappa = np.zeros(N)
-
-    for i in range(1, N - 1):
-        p0 = points[i - 1]
-        p1 = points[i]
-        p2 = points[i + 1]
-
-        a = p1 - p0
-        b = p2 - p1
-        c = p2 - p0
-
-        # Triangle area * 2 (cross product magnitude)
-        cross = np.abs(a[0]*b[1] - a[1]*b[0])
-
-        la = np.linalg.norm(a)
-        lb = np.linalg.norm(b)
-        lc = np.linalg.norm(c)
-
-        # Avoid division by zero (collinear or duplicate points)
-        if la * lb * lc > 0:
-            kappa[i] = 2 * cross / (la * lb * lc)
-        else:
-            kappa[i] = 0.0
-
-    # Optional: copy interior values to endpoints
-    kappa[0] = kappa[1]
-    kappa[-1] = kappa[-2]
-
-    return kappa
-
 def compose_with_cov(
     T_prev: pylgmath.TransformationWithCovariance,
     T_edge: pylgmath.TransformationWithCovariance,
@@ -106,7 +67,6 @@ if __name__ == '__main__':
 
     test_graph = factory.buildGraph()
     print(f"Graph {test_graph} has {test_graph.number_of_vertices} vertices and {test_graph.number_of_edges} edges")
-    # root = next(iter(test_graph._vertices.values()))
     g_utils.set_world_frame(test_graph, test_graph.root)
 
     v_start = test_graph.root
