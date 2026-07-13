@@ -25,12 +25,14 @@ class Edge:
             self.from_id = edge_msg.from_id
             self.to_id = edge_msg.to_id
             self.T = Transformation(xi_ab=np.array(edge_msg.t_to_from.xi).reshape(6, 1))
+            self.cov = np.array(edge_msg.t_to_from.cov).reshape(6,6)
         else:
             self.type = EDGE_TYPE_UNKNOWN
             self.mode = EDGE_MODE_UNKNOWN
             self.from_id = INVALID_ID
             self.to_id = INVALID_ID
             self.T = Transformation()
+            self.cov = np.zeros((6,6))
         Edge.__id_source += 1
 
     def is_teach(self):

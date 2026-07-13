@@ -47,7 +47,7 @@ if __name__ == '__main__':
     vis.update_renderer()
 
     for i in range(test_graph.major_id + 1):
-        v_start = test_graph.get_vertex((i, 0))
+        v_start = test_graph.get_vertex((i, v_start.id))
         paused = True
         vertices = list(TemporalIterator(v_start))
         vertices_to_plot = vertices[:-10] if len(vertices) > 10 else vertices

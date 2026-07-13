@@ -27,12 +27,16 @@ class Vertex:
         return self.T_w_v.inverse()
     
     @property
+    def robot(self):
+        return self.id >> 44
+    
+    @property
     def run(self):
-        return self.id >> 32
+        return (self.id >> 16) & 0x0FFFFFFFFFFF
     
     @property
     def minor_id(self):
-        return self.id & 0x00000000FFFFFFFF;
+        return self.id & 0x000000000000FFFF;
 
     def get_data(self, message_name: str):
         if not self.cache:

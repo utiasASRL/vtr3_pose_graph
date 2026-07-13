@@ -10,9 +10,11 @@ class Graph:
         if graph_msg:
             self.major_id = graph_msg.curr_major_id
             self.minor_id = graph_msg.curr_minor_id
+            self.root_vid = graph_msg.map_info.root_vid
         else:
             self.major_id = INVALID_ID
             self.minor_id = INVALID_ID
+            self.root_vid = INVALID_ID
 
     def add_edge(self, edge: Edge):
         if not (self.contains_vertex(edge.from_id) and self.contains_vertex(edge.to_id)):
@@ -41,13 +43,14 @@ class Graph:
         if isinstance(vid, int):
             return vid
         elif isinstance(vid, tuple) and len(vid) == 2 and isinstance(vid[0], int):
+            print(f"{vid[0]}, {vid[1]}")
             return Vertex.compose_id(vid[0], vid[1])
         raise IndexError("Vertices must be a single unique integer or a tuple of two integers")
 
 
     @property
     def root(self) -> Vertex:
-        return self._vertices.get(0)
+        return self._vertices.get(self.root_vid)
 
 
     @property

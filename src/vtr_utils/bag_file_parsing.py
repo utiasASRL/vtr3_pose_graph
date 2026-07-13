@@ -96,6 +96,7 @@ class Rosbag2GraphFactory(GraphFactory):
         root_access = self.cache[self.idx_path]
         index_msgs = root_access.get_bag_messages("index")
 
+        print(f"len(index_msgs) = {len(index_msgs)}")
         assert len(index_msgs) == 1, "Index can have only 1 message, investigate your file paths or " \
                 "vtr_pose_graph structure has changed"
         graph = Graph(index_msgs[0][1])
@@ -106,6 +107,17 @@ class Rosbag2GraphFactory(GraphFactory):
 
         edge_access = self.cache[self.edge_path]
         for _, edge_msg in edge_access.get_bag_msgs_iter("edges"):
-            graph.add_edge(Edge(edge_msg))
+            try:
+                graph.add_edge(Edge(edge_msg))
+            except: # case of dangling edges
+                continue
+
+        # Derive root: the run-0 vertex with no incoming temporal edge.
+        # This is robust regardless of what root_vid is stored in the index message.
+        temporal_to_ids = {e.to_id for e in graph._edges.values() if e.is_temporal()}
+        for vid, v in graph._vertices.items():
+            if vid not in temporal_to_ids:
+                graph.root_vid = vid
+                break
 
         return graph

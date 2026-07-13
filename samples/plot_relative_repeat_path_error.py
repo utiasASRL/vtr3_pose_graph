@@ -70,43 +70,74 @@ def plot_paths(ax, test_graph, run1, run2, path_matrix1, omit_start, omit_end, v
 if __name__ == '__main__':
      
      offline_graph_dirs = [
-          #     "/home/asrl/ASRL/vtr3/temp/virtr_office2/graph",
-          #     "/home/asrl/ASRL/vtr3/temp/virtr_urban/graph",
-          #     "/home/asrl/ASRL/vtr3/temp/virtr_rural/graph",
-              "/home/asrl/ASRL/vtr3/temp/vir_office_clicked/graph",
-              "/home/asrl/ASRL/vtr3/temp/new_urban/graph",
-              "/home/asrl/ASRL/vtr3/temp/vir_rural_clicked/graph"#,
-          #     "/home/asrl/ASRL/vtr3/temp/vir_rural_driven/graph"
+#           #     "/home/asrl/ASRL/vtr3/temp/virtr_office2/graph",
+#           #     "/home/asrl/ASRL/vtr3/temp/virtr_urban/graph",
+#           #     "/home/asrl/ASRL/vtr3/temp/virtr_rural/graph",
+              "/home/asrl/ASRL/vtr3/temp/suffield/vir_office_clicked/graph",
+              "/home/asrl/ASRL/vtr3/temp/suffield/new_urban/graph",
+              "/home/asrl/ASRL/vtr3/temp/suffield/vir_rural_clicked/graph"#,
+#           #     "/home/asrl/ASRL/vtr3/temp/vir_rural_driven/graph"
 
      ]
      runs = [
-          #    (20,21), LTR OFFICE
-          #    (1,2,3,5), #LTR URBAN
-          #    (4,13,14), #LTR RURAL
+#           #    (20,21), LTR OFFICE
+#           #    (1,2,3,5), #LTR URBAN
+#           #    (4,13,14), #LTR RURAL
             (3,4,5,7), #VIRTR OFFICE
             (1,4,6,7),   #VIRTR URBAN
             (1,2), # VIRTR RURAL CLICKED
-          #   (1) # VIRTR RURAL DRIVEN
+#           #   (1) # VIRTR RURAL DRIVEN
+     ] 
+
+     # offline_graph_dirs = [
+     #        "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/parking/graph",
+     #        "/home/desiree/ASRL/vtr3/temp/Experiment2/VirLTR/Pix4D/dome/graph",
+     #        "/home/desiree/ASRL/vtr3/temp/Experiment2/VirRTR/Pix4D/dome/graph"
+     # ]
+     # runs = [
+     #        (4, 7, 8, 9, 10), 
+     #        (1, 3, 4, 5, 6),  
+     #        (1, 2, 4, 5, 6)
+     # ]
+     
+     names = [
+            "Urban-R (VirLT&R)",
+            "Structured-R (VirLT&R)",
+            "Sparse-R (VirLT&R)"
      ]
 
      omit_starts = [0, 0, 0, 0]  # Number of vertices to omit from the start for each graph
      omit_ends = [2, 2, 2, 2]    # Number of vertices to omit from the end for each graph
 
-     # Determine grid layout dynamically based on the number of graphs
+     # Determine grid layout with custom 2-top + 1-bottom arrangement for 3 plots
      n_graphs = len(offline_graph_dirs)
-     n_cols = len(offline_graph_dirs) # 4
-     n_rows = math.ceil(n_graphs / n_cols)
-     fig, axs = plt.subplots(n_rows, n_cols, figsize=(18, 18)) #15
+     fig = plt.figure(figsize=(18, 12), layout='constrained')
 
-     # Make axs a flat list for easy indexing.
-     if n_graphs == 1:
-            axs = [axs]
+     if n_graphs == 3:
+            # Use a 2 x 4 GridSpec so:
+            #  - top-left spans cols 0:2
+            #  - top-right spans cols 2:4
+            #  - bottom spans cols 1:3 (centered, i.e. half of each top column)
+          #   gs = fig.add_gridspec(2, 4, height_ratios=[1, 1], width_ratios=[1, 1, 1, 1],
+          #                         hspace=0.5, wspace=0.10)
+          #   axs = [
+          #           fig.add_subplot(gs[0, 0:2]),  # top-left (spans two cols)
+          #           fig.add_subplot(gs[0, 2:4]),  # top-right (spans two cols)
+          #           fig.add_subplot(gs[1, 1:3])   # bottom centered (spans middle two cols)
+          #   ]
+          gs = fig.add_gridspec(1, 3, hspace=0.35, wspace=0.3)
+          axs = [fig.add_subplot(gs[0, i]) for i in range(3)]
      else:
-            axs = np.array(axs).flatten()
+            n_cols = min(3, n_graphs)
+            n_rows = math.ceil(n_graphs / n_cols)
+            gs = fig.add_gridspec(n_rows, n_cols, hspace=0.35, wspace=0.3)
+            axs = [fig.add_subplot(gs[i // n_cols, i % n_cols]) for i in range(n_graphs)]
+
+     axs = np.array(axs)
 
      plt.rcParams.update({'font.size': 18})  # Set default font size
 
-     # First pass: compute global min and max error across all comparison runs for color scaling
+# First pass: compute global min and max error across all comparison runs for color scaling
      all_distances = []
      for offline_graph_dir, run_set, omit_start, omit_end in zip(offline_graph_dirs, runs, omit_starts, omit_ends):
             factory = Rosbag2GraphFactory(offline_graph_dir)
@@ -204,25 +235,30 @@ for i, (offline_graph_dir, run_set, omit_start, omit_end) in enumerate(zip(offli
          # Removed individual x and y labels for subplots
          ax.grid(True, which='both', color='lightgrey', linestyle='-', linewidth=0.5, zorder=-1)
          ax.tick_params(axis='both', which='major', labelsize=16)
-         # Removed legend for the subplot
 
-# Turn off any unused subplots.
-for idx in range(n_graphs, len(axs)):
-         axs[idx].axis('off')
+         # Add subplot name below the plot
+         ax.set_xlabel(names[i], fontsize=16) #, labelpad=20)
 
-# Create a colorbar from the last scatter plot.
+# Create a shared colorbar from the last scatter plot.
 if sc is not None:
-         cbar = fig.colorbar(sc, ax=axs.tolist(), orientation='vertical', fraction=0.02, pad=0.04)
-         cbar.set_label("Relative Lateral Error Between Repeats (m)", fontsize=14, labelpad=20)
-         cbar.ax.tick_params(labelsize=12)
+    cbar = fig.colorbar(sc, ax=axs.tolist(), orientation='vertical', 
+                        shrink=0.5, pad=0.02, aspect=20)
+    cbar.set_label("Relative Lateral Error Between Repeats (m)", fontsize=16)
+    cbar.ax.tick_params(labelsize=12)
 
-# Set common x and y axis labels for all subplots.
-fig.supxlabel("x (m)", fontsize=14)
-y_label = fig.supylabel("y (m)", fontsize=14)
-# Shift the y-label closer to the subplots by adjusting its x-position.
-y_label.set_x(0.06)
+# Shared axis labels and tighten layout so subplots are large and labels are near plots
+# fig.supxlabel("x (m)", fontsize=16, y=0.0)
+# ylab = fig.supylabel("y (m)", fontsize=16)
+# ylab.set_x(0.08)  # move suylabel closer to plots
+# axs[1].set_xlabel("x (m)", fontsize=16, y=-0.02)  # center subplot gets x label
+fig.supxlabel("x (m)", fontsize=16, y=-0.02)
+axs[0].set_ylabel("y (m)", fontsize=16)  # leftmost subplot gets y label
+# Adjust subplot margins to maximize plot area and keep the bottom label visible
+#fig.subplots_adjust(left=0.10, right=0.93, top=0.95, bottom=0.12, hspace=0.22, wspace=0.10)
+
 # Set the overall figure title.
-fig.suptitle("VirLTR (Pix4D) Relative Repeat Deviation", fontsize=18)
+#fig.suptitle("VirLTR (Pix4D) Relative Repeat Deviation", fontsize=18)
 
-#plt.tight_layout(pad=0.25)
+plt.tight_layout(pad=0.25)
+plt.savefig('relative_repeat.png')
 plt.show()
