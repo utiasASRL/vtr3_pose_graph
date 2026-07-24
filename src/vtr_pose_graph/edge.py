@@ -25,7 +25,11 @@ class Edge:
             self.from_id = edge_msg.from_id
             self.to_id = edge_msg.to_id
             self.T = Transformation(xi_ab=np.array(edge_msg.t_to_from.xi).reshape(6, 1))
-            self.cov = np.array(edge_msg.t_to_from.cov).reshape(6,6)
+            print(edge_msg.t_to_from.cov_set)
+            if edge_msg.t_to_from.cov_set == True:
+                self.cov = np.array(edge_msg.t_to_from.cov).reshape(6,6)
+            else:
+                self.cov = np.zeros((6,6))
         else:
             self.type = EDGE_TYPE_UNKNOWN
             self.mode = EDGE_MODE_UNKNOWN
@@ -40,6 +44,9 @@ class Edge:
 
     def is_repeat(self):
         return self.mode == EDGE_MODE_AUTONOMOUS
+    
+    def is_unknown(self):
+        return self.mode == EDGE_MODE_UNKNOWN
 
     def is_spatial(self):
         return self.type == EDGE_TYPE_SPATIAL
@@ -48,4 +55,4 @@ class Edge:
         return self.type == EDGE_TYPE_TEMPORAL
 
     def __repr__(self):
-        return f"{'Taught' if self.is_teach() else 'Repeat'} {'Temporal' if self.is_temporal() else 'Spatial'} Edge"
+        return f"{'Taught' if self.is_teach() else 'Repeat'} {'Temporal' if self.is_temporal() else 'Spatial'} {'Unknown' if self.is_unknown() else 'Spatial'} Edge"

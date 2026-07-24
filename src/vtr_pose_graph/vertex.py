@@ -21,6 +21,7 @@ class Vertex:
         self.neighbours = set()
         self.diff = None
         self.taught = False
+        self.unknown = False # TODO: instead of having 2 bools, consolidate into mode enum
 
     @property
     def T_v_w(self):
@@ -61,6 +62,9 @@ class Vertex:
         if e.is_teach() and (self.id == e.to_id or self.id == e.from_id):
             self.taught = True
 
+    def _mark_unknown(self, e: Edge):
+        if e.is_unknown():
+            self.unknown = True
 
     @staticmethod
     def compose_id(run_id, vertex_id):

@@ -107,9 +107,11 @@ class Rosbag2GraphFactory(GraphFactory):
 
         edge_access = self.cache[self.edge_path]
         for _, edge_msg in edge_access.get_bag_msgs_iter("edges"):
+            print(edge_msg)
             try:
                 graph.add_edge(Edge(edge_msg))
-            except: # case of dangling edges
+            except Exception as e: # case of dangling edges
+                print(f"can't add edge bc {e}")
                 continue
 
         # Derive root: the run-0 vertex with no incoming temporal edge.

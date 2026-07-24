@@ -78,6 +78,17 @@ class PriviledgedIterator(DepthFirstSearchIterator):
     def __init__(self, vertex_start: Vertex, forward=True):
         super().__init__(vertex_start, t_filter_fcn=teach_filter)
         
+def unknown_filter(vertex: Vertex, edge: Edge):
+    return vertex.unknown
+
+def topology_filter(vertex: Vertex, edge: Edge):
+    return (vertex.unknown or vertex.taught)
+
+class TopologyIterator(DepthFirstSearchIterator):
+
+    def __init__(self, vertex_start: Vertex, forward=True):
+        super().__init__(vertex_start, t_filter_fcn=topology_filter)
+
 class SlidingWindowIterator(BreadthFirstSearchIterator):
 
     def __init__(self, vertex_start: Vertex, max_nodes: int):
