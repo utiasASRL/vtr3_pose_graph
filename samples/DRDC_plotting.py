@@ -88,7 +88,7 @@ urban_discount = (990,1030, 'urban')
 rural_discount = (297,355, 'rural')
 
 # markers
-dists_officeltr = np.array([0,45,134,210,286,362,439,698,790,877,960]) # removed 7 @ 517, 8 @ 600
+dists_officeltr = np.array([0,45,134,210,286,362,439,698,790,877,960]) # removed 7 @ 517, 8 @ 600 (OFFICE IS URBAN)
 markers_officeltr = np.array((
         [0,0,0,0],
         [-0.009525, -0.053975, -0.012700, -0.044450],
@@ -119,7 +119,7 @@ markers_officevirtr = np.array((
 ))
 
 
-dists_urbanltr = np.array(([0,107,195,410,505,646,775,833,897,976])) #,1028]))
+dists_urbanltr = np.array(([0,107,195,410,505,646,775,833,897,976])) #,1028])) URBAN IS STRUCTURED
 markers_urbanltr = np.array((
     [0,0,0,0],
     [-0.025400, -0.015875, 0.000000, -0.003175],
@@ -150,17 +150,28 @@ markers_urbanvirtr = np.array((
 ))
 
 
-dists_ruralltr = np.array(([0,54, 119, 197, 397, 553, 650, 748]))
+dists_ruralltr = np.array(([0,54, 119, 197, 397, 553, 650, 748])) #RURAL IS SPARSE
 markers_ruralltr = np.array((
-    [0,0,0,0],
-    [0.101600, 0.088900, -0.079375, -0.050800],
-    [0.028575, 0.123825, 0.161925, 0.114300],
-    [-0.012700, -0.041275, 0.098425, -0.003175],
-    [0.003175, 0.034925, 0.063500, 0.069850],
-    [0.092075, 0.038100, 0.104775, 0.104775],
-    [0.209550, 0.196850, 0.241300, 0.263525],
-    [0.219075, 0.203200, 0.234950, 0.158750]
+    [0,0,0],
+    [0.088900, -0.079375, -0.050800],
+    [0.123825, 0.161925, 0.114300],
+    [-0.041275, 0.098425, -0.003175],
+    [0.034925, 0.063500, 0.069850],
+    [0.038100, 0.104775, 0.104775],
+    [0.196850, 0.241300, 0.263525],
+    [0.203200, 0.234950, 0.158750]
 ))
+# markers_ruralltr = np.array((
+#     [0,0,0,0],
+#     [0.101600, 0.088900, -0.079375, -0.050800],
+#     [0.028575, 0.123825, 0.161925, 0.114300],
+#     [-0.012700, -0.041275, 0.098425, -0.003175],
+#     [0.003175, 0.034925, 0.063500, 0.069850],
+#     [0.092075, 0.038100, 0.104775, 0.104775],
+#     [0.209550, 0.196850, 0.241300, 0.263525],
+#     [0.219075, 0.203200, 0.234950, 0.158750]
+# ))
+
 
 dists_ruralvirtr = np.array(([0,53, 118, 195, 375, 530, 627, 726]))
 markers_ruralvirtr = np.array((
@@ -276,10 +287,54 @@ def get_stats(repeats, discounted, marker_distances=None):
 
 def get_marker_stats(distances, markers):
     flat_vals = np.ravel(markers)
-    rmse_hard = np.sqrt(np.mean(np.square(flat_vals)))
-    max_hard  = max((abs(v) for v in flat_vals)) # Q: per trials or over smoothed?
+    if flat_vals.size == 0:
+        return float('nan'), float('nan'), float('nan'), float('nan')
+    """
+    Calculate pooled statistics over all marker measurements
+    from all repeated trials.
 
-    return rmse_hard, max_hard 
+    Rows: markers
+    Columns: repeated trials
+    """
+    rmse_hard = np.sqrt(np.mean(np.square(flat_vals)))
+    max_hard  = np.max(np.abs(flat_vals)) # Q: per trials or over smoothed?
+    # mean_hard = np.mean(flat_vals)
+    # std_hard  = np.std(flat_vals)
+
+    return rmse_hard, max_hard#, mean_hard, std_hard 
+
+def get_marker_repeat_stats(markers):
+    """
+    Calculate one marker-based lateral RMSE for each repeated trial,
+    followed by the mean and sample standard deviation across trials.
+
+    Rows: markers
+    Columns: repeated trials
+    """
+    markers = np.asarray(markers, dtype=float)
+
+    if markers.size == 0:
+        return np.array([]), float('nan'), float('nan')
+
+    if markers.ndim != 2:
+        raise ValueError(
+            "The marker array must be two-dimensional, with "
+            "markers as rows and repeated trials as columns."
+        )
+
+    # One RMSE for each repeat/column
+    repeat_rmses = np.sqrt(np.mean(markers**2, axis=0))
+
+    # Mean of the repeat-level RMSE values
+    mean_repeat_rmse = np.mean(repeat_rmses)
+
+    # Sample standard deviation across repeats
+    if repeat_rmses.size > 1:
+        std_repeat_rmse = np.std(repeat_rmses, ddof=1)
+    else:
+        std_repeat_rmse = float('nan')
+
+    return repeat_rmses, mean_repeat_rmse, std_repeat_rmse
 
 def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
     """
@@ -367,10 +422,10 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
         fig, ax = plt.subplots(figsize=(10, 6))
         ax.set_xticklabels(all_method_labels, fontsize=tick_fs)
         ax.set_ylabel("Marker Error (m)", fontsize=label_fs)
-        #ax.set_title(f"{exp_name} – Marker Errors Summary", fontsize=title_fs)
+        ax.set_title(f"{exp_name} – Marker Errors Summary", fontsize=title_fs)
         ax.set_ylabel("Marker Error (m)")
         ax.grid(True, linestyle="--", alpha=0.5)
-        # ax.axhline(0, linestyle='--', linewidth=2, color='darkgrey')  # moved below to draw in front
+        ax.axhline(0, linestyle='--', linewidth=2, color='darkgrey')  # moved below to draw in front
         ax.tick_params(axis='y', labelsize=tick_fs)
         
         # Collect positions and data for each method
@@ -420,7 +475,7 @@ def summary_marker_box_plot(office_markers, urban_markers, rural_markers):
 
         plt.tight_layout()
         # Optional if labels are still cramped:
-        # plt.subplots_adjust(bottom=0.18)
+        plt.subplots_adjust(bottom=0.18)
         plt.savefig('box_plot', dpi=300, bbox_inches='tight')
         plt.show()
 
@@ -448,15 +503,15 @@ def plot_experiment(ltr, virtr, markers, discounted):
     ltr_stats = get_stats(ltr, discounted, marker_distances=markers['ltr_dist'])
     virtr_stats = get_stats(virtr, discounted, marker_distances=markers['virtr_dist'])
 
-    ltr_marker_rmse, ltr_marker_max = get_marker_stats(markers['ltr_dist'], markers['ltr_markers'])
-    virtr_marker_rmse, virtr_marker_max = get_marker_stats(markers['virtr_dist'], markers['virtr_markers'])
+    ltr_marker_rmse, ltr_marker_max, ltr_marker_mean, ltr_marker_std = get_marker_stats(markers['ltr_dist'], markers['ltr_markers'])
+    virtr_marker_rmse, virtr_marker_max, virtr_marker_mean, virtr_marker_std = get_marker_stats(markers['virtr_dist'], markers['virtr_markers'])
 
     # get internally estimated distance at markers
-    # idx = np.searchsorted(ltr_stats['common_x'], markers['ltr_dist'])
-    # pte_marks = ltr_stats['average_dists'][idx-1]
+    idx = np.searchsorted(ltr_stats['common_x'], markers['ltr_dist'])
+    pte_marks = ltr_stats['average_dists'][idx-1]
     print(f"LT&R   PTE@Marks RMSE={ltr_stats['rmse_at_marks']:.3f} m, Max={ltr_stats['max_at_marks']:.3f} m)")
-    # idx = np.searchsorted(virtr_stats['common_x'], markers['virtr_dist'])
-    # pte_marks = virtr_stats['average_dists'][idx-1]
+    idx = np.searchsorted(virtr_stats['common_x'], markers['virtr_dist'])
+    pte_marks = virtr_stats['average_dists'][idx-1]
     print(f"VirT&R PTE@Marks RMSE={virtr_stats['rmse_at_marks']:.3f} m, Max={virtr_stats['max_at_marks']:.3f} m)")
 
     # LT&R
@@ -466,7 +521,8 @@ def plot_experiment(ltr, virtr, markers, discounted):
         label=(f"LT&R Avg PTE Curve (RMSE={ltr_stats['rmse_all']:.3f} m, Max={ltr_stats['max_all']:.3f} m)"))
     ax_pte.scatter(markers['ltr_dist'], markers['ltr_markers'][:,0], s=80, marker='x', linewidths=1.2, alpha=0.9, c='r', zorder=10,
                     label=(f"LT&R Marker Measurements "
-                    f"(RMSE={ltr_marker_rmse:.3f} m, Max={ltr_marker_max:.3f} m)"
+                    f"(RMSE={ltr_marker_rmse:.3f} m, Max={ltr_marker_max:.3f} m, "
+                    f"Mean={ltr_marker_mean:.3f} +/- {ltr_marker_std:.3f} m)"
                     ))
     for i in range(1,markers['ltr_markers'].shape[1]):
         ax_pte.scatter(markers['ltr_dist'], markers['ltr_markers'][:,i], s=80, marker='x', linewidths=1.2, alpha=0.9, c='r', zorder=10)
@@ -475,11 +531,12 @@ def plot_experiment(ltr, virtr, markers, discounted):
     # VirT&R
     ax_pte.plot(virtr_stats['common_x'], virtr_stats['average_dists'], linewidth=1.5, color='lightskyblue',
         label=(f"VirT&R Discounted Avg PTE Curve (RMSE={virtr_stats['discounted_rmse_all']:.3f} m, Max={virtr_stats['discounted_max_all']:.3f} m)"))
-    # ax_pte.plot(virtr_stats['common_x'], virtr_stats['average_dists'], linewidth=1.5, color='lightskyblue',
-    #     label=(f"Avg PTE Curve (RMSE={virtr_stats['rmse_all']:.3f} m, Max={virtr_stats['max_all']:.3f} m)"))
+    ax_pte.plot(virtr_stats['common_x'], virtr_stats['average_dists'], linewidth=1.5, color='lightskyblue',
+    label=(f"Avg PTE Curve (RMSE={virtr_stats['rmse_all']:.3f} m, Max={virtr_stats['max_all']:.3f} m)"))
     ax_pte.scatter(markers['virtr_dist'], markers['virtr_markers'][:,0], s=80, marker='x', linewidths=1.2, alpha=0.9, c='b', zorder=10,
                 label=(f"VirT&R Marker Measurements "
-                f"(RMSE={virtr_marker_rmse:.3f} m, Max={virtr_marker_max:.3f} m)"
+                f"(RMSE={virtr_marker_rmse:.3f} m, Max={virtr_marker_max:.3f} m, "
+                f"Mean={virtr_marker_mean:.3f} +/- {virtr_marker_std:.3f} m)"
                 ))
     for i in range(1,markers['virtr_markers'].shape[1]):
         ax_pte.scatter(markers['virtr_dist'], markers['virtr_markers'][:,i], s=80, marker='x', linewidths=1.2, alpha=0.9, c='b', zorder=10)
@@ -524,29 +581,44 @@ def summary_pte_plots(office_ltr, office_virtr, office_markers, office_discount,
         
         ltr_marker_rmse, ltr_marker_max = get_marker_stats(markers['ltr_dist'], markers['ltr_markers'])
         virtr_marker_rmse, virtr_marker_max = get_marker_stats(markers['virtr_dist'], markers['virtr_markers'])
+
+        # Repeat-level statistics for the new smaller table
+        (
+            ltr_repeat_rmses,
+            ltr_mean_repeat_rmse,
+            ltr_std_repeat_rmse,
+        ) = get_marker_repeat_stats(markers['ltr_markers'])
+
+        (
+            virtr_repeat_rmses,
+            virtr_mean_repeat_rmse,
+            virtr_std_repeat_rmse,
+        ) = get_marker_repeat_stats(markers['virtr_markers'])
         
         # LT&R curve
         ax_pte.plot(ltr_stats['common_x'], ltr_stats['average_dists'], linewidth=1.5, color='lightcoral',
-            label=(f"LT&R"))
-                    #label=(f"LT&R (RMSE={ltr_stats['discounted_rmse_all']:.3f} m, Max={ltr_stats['discounted_max_all']:.3f} m)"))
+            #label=(f"LT&R"))
+            label=(f"LT&R (RMSE={ltr_stats['discounted_rmse_all']:.3f} m, Max={ltr_stats['discounted_max_all']:.3f} m)"))
 
         # LT&R markers
         ax_pte.scatter(markers['ltr_dist'], markers['ltr_markers'][:,0], s=80, marker='x', linewidths=1.2, alpha=0.9, c='r', zorder=10,
-                       label=(f"LT&R Markers"))
-                               #label=(f"LT&R Markers (RMSE={ltr_marker_rmse:.3f} m, Max={ltr_marker_max:.3f} m)"))
+                       #label=(f"LT&R Markers"))
+                       label=(f"LT&R Markers (RMSE={ltr_marker_rmse:.3f} m, Max={ltr_marker_max:.3f} m, "
+                              f"Mean={ltr_mean_repeat_rmse:.3f} +/- {ltr_std_repeat_rmse:.3f} m)"))
 
         for i in range(1, markers['ltr_markers'].shape[1]):
             ax_pte.scatter(markers['ltr_dist'], markers['ltr_markers'][:,i], s=80, marker='x', linewidths=1.2, alpha=0.9, c='r', zorder=10)
         
         # VirT&R curve
         ax_pte.plot(virtr_stats['common_x'], virtr_stats['average_dists'], linewidth=1.5, color='lightskyblue',
-            label=(f"VirLT&R"))
-                    #label=(f"VirT&R (RMSE={virtr_stats['discounted_rmse_all']:.3f} m, Max={virtr_stats['discounted_max_all']:.3f} m)"))
+            #label=(f"VirLT&R"))
+            label=(f"VirT&R (RMSE={virtr_stats['discounted_rmse_all']:.3f} m, Max={virtr_stats['discounted_max_all']:.3f} m)"))
 
         # VirT&R markers
         ax_pte.scatter(markers['virtr_dist'], markers['virtr_markers'][:,0], s=80, marker='x', linewidths=1.2, alpha=0.9, c='b', zorder=10,
-                       label=(f"VirLT&R Markers"))
-                               #label=(f"VirT&R Markers (RMSE={virtr_marker_rmse:.3f} m, Max={virtr_marker_max:.3f} m)"))
+                       #label=(f"VirLT&R Markers"))
+                       label=(f"VirT&R Markers (RMSE={virtr_marker_rmse:.3f} m, Max={virtr_marker_max:.3f} m, "
+                              f"Mean={virtr_mean_repeat_rmse:.3f} +/- {virtr_std_repeat_rmse:.3f} m)"))
         for i in range(1, markers['virtr_markers'].shape[1]):
             ax_pte.scatter(markers['virtr_dist'], markers['virtr_markers'][:,i], s=80, marker='x', linewidths=1.2, alpha=0.9, c='b', zorder=10)
         
@@ -563,6 +635,43 @@ def summary_pte_plots(office_ltr, office_virtr, office_markers, office_discount,
             legend_loc = 'upper left'
 
         ax_pte.legend(loc=legend_loc, fontsize=legend_fs)
+
+        print(
+            f"LT&R pooled marker statistics: "
+            f"RMSE={ltr_marker_rmse:.4f} m, "
+            f"Max={ltr_marker_max:.4f} m"
+            )
+        
+        print(
+            f"LT&R repeat-level marker RMSE: "
+            f"{ltr_mean_repeat_rmse:.4f} +/- "
+            f"{ltr_std_repeat_rmse:.4f} m, "
+            f"n={ltr_repeat_rmses.size}"
+        )
+    
+        print(
+            f"LT&R individual repeat RMSEs: "
+            f"{np.array2string(ltr_repeat_rmses, precision=4)}"
+        )
+    
+        print(
+            f"VirT&R pooled marker statistics: "
+            f"RMSE={virtr_marker_rmse:.4f} m, "
+            f"Max={virtr_marker_max:.4f} m"
+        )
+    
+        print(
+            f"VirT&R repeat-level marker RMSE: "
+            f"{virtr_mean_repeat_rmse:.4f} +/- "
+            f"{virtr_std_repeat_rmse:.4f} m, "
+            f"n={virtr_repeat_rmses.size}"
+        )
+    
+        print(
+            f"VirT&R individual repeat RMSEs: "
+            f"{np.array2string(virtr_repeat_rmses, precision=4)}"
+        )
+        
 
     # Keep these in sync with subplots_adjust below
     LEFT_MARGIN = 0.06
@@ -582,6 +691,7 @@ def summary_pte_plots(office_ltr, office_virtr, office_markers, office_discount,
     fig.savefig(filename, dpi=300)
     plt.show()
 
+    
 
 # plot_experiment(office_LTR, office_VirTR, office_markers, office_discount)
 # plot_experiment(urban_LTR, urban_VirTR, urban_markers, urban_discount)
