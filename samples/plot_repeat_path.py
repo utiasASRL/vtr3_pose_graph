@@ -50,7 +50,7 @@ if __name__ == '__main__':
         args.filter = [i+1 for i in range(test_graph.major_id)]
 
     for i in range(test_graph.major_id):
-        if i+1 not in args.filter:
+        if i+1 not in args.filter or not test_graph.contains_vertex((i+1, 0)):
             continue
         v_start = test_graph.get_vertex((i+1,0))
         

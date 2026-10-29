@@ -31,7 +31,7 @@ class Edge:
             self.mode = EDGE_MODE_UNKNOWN
             self.from_id = INVALID_ID
             self.to_id = INVALID_ID
-            self.T = TransformationWithCovariance()
+            self.T = TransformationWithCovariance(init_cov_to_zero=True)
         Edge.__id_source += 1
 
     def is_teach(self):
@@ -47,4 +47,4 @@ class Edge:
         return self.type == EDGE_TYPE_TEMPORAL
 
     def __repr__(self):
-        return f"{'Taught' if self.is_teach() else 'Repeat'} {'Temporal' if self.is_temporal() else 'Spatial'} Edge {self.from_id} -> {self.to_id}"
+        return f"{'Taught' if self.is_teach() else 'Repeat'} {'Temporal' if self.is_temporal() else 'Spatial'} Edge {hex(self.from_id)} -> {hex(self.to_id)}"

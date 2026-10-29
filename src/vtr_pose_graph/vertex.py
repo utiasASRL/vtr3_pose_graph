@@ -57,6 +57,13 @@ class Vertex:
         if e.is_teach() and (self.id == e.to_id or self.id == e.from_id):
             self.taught = True
 
+    def __eq__(self, value):
+        if isinstance(value, Vertex):
+            return self.id == value.id
+        return False
+
+    def __hash__(self):
+        return hash(self.id)
 
     @staticmethod
     def compose_id(run_id, vertex_id):

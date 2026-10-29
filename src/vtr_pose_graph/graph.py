@@ -3,12 +3,13 @@ from vtr_pose_graph.edge import Edge
 from vtr_pose_graph.vertex import Vertex
 from typing import Union
 from typing_extensions import Self
+from sortedcollections import ValueSortedDict
 
 
 class Graph:
     def __init__(self, graph_msg=None):
         self._edges = {}
-        self._vertices = {}
+        self._vertices = ValueSortedDict(lambda v: v.stamp)
         if graph_msg:
             self.major_id = graph_msg.curr_major_id
             self.minor_id = graph_msg.curr_minor_id
@@ -37,6 +38,9 @@ class Graph:
 
     def get_vertex(self, vid: Union[int, tuple]) -> Vertex:
         return self._vertices[self._handle_vid(vid)]
+    
+    def get_vertex_before(self, t: int) -> Vertex:
+        return self._vertices.values()[self._vertices.bisect_key_right(t) - 1]
     
     def get_privileged_subgraph(self) -> Self:
         teach_graph = Graph()
