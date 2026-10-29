@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     v_start = test_graph.root
 
-    path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start))
+    # path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start))
 
     x = []
     y = []
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     if args.filter is None:
         args.filter = [i+1 for i in range(test_graph.major_id)]
 
-    for i in range(test_graph.major_id):
+    for i in test_graph.runs:
         if i+1 not in args.filter or not test_graph.contains_vertex((i+1, 0)):
             continue
         v_start = test_graph.get_vertex((i+1,0))
@@ -64,7 +64,7 @@ if __name__ == '__main__':
         for v, e in TemporalIterator(v_start):
             pose_vec = np.hstack((pose_vec, np.vstack((v.T_v_w.r_ba_ina(), so3op.rot2vec(v.T_w_v.C_ba()) * 180/np.pi))))
             t.append(v.stamp / 1e9)
-            dist.append(vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
+            # dist.append(vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
             path_len += np.linalg.norm(e.T.r_ba_ina())
             p.append(path_len)
         t = np.array(t)

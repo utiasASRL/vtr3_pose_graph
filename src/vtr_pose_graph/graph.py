@@ -73,8 +73,7 @@ class Graph:
 
     @property
     def root(self) -> Vertex:
-        return self._vertices.get(0)
-
+        return self._vertices.values()[0]
 
     @property
     def number_of_edges(self):
@@ -83,6 +82,10 @@ class Graph:
     @property
     def number_of_vertices(self):
         return len(self._vertices)
+
+    @property
+    def runs(self):
+        return {v.run for v in self._vertices.values()}
 
     def __repr__(self):
         return f"Graph V{self.major_id}.{self.minor_id}"

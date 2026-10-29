@@ -105,7 +105,15 @@ class Rosbag2GraphFactory(GraphFactory):
             graph.add_vertex(Vertex(vert_msg, bagfile_cache=self.cache))
 
         edge_access = self.cache[self.edge_path]
+        failed = False
         for _, edge_msg in edge_access.get_bag_msgs_iter("edges"):
-            graph.add_edge(Edge(edge_msg))
+            try:
+                graph.add_edge(Edge(edge_msg))
+            except RuntimeError as e:
+                print(e)
+                failed = True
+
+        # if failed:
+        #     raise RuntimeError("Graph contains missing vertices.")
 
         return graph

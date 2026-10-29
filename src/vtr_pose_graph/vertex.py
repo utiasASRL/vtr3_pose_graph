@@ -25,14 +25,18 @@ class Vertex:
     @property
     def T_v_w(self):
         return self.T_w_v.inverse()
+
+    @property
+    def robot_id(self):
+        return self.id >> 60
     
     @property
     def run(self):
-        return self.id >> 32
+        return self.id >> 16
     
     @property
     def minor_id(self):
-        return self.id & 0x00000000FFFFFFFF;
+        return self.id & 0x000000000000FFFF;
 
     def get_data(self, message_name: str):
         if not self.cache:
@@ -66,8 +70,8 @@ class Vertex:
         return hash(self.id)
 
     @staticmethod
-    def compose_id(run_id, vertex_id):
-        return (run_id << 32) | vertex_id
+    def compose_id(run_id, vertex_id, robot_id=0):
+        return (robot_id << 60) | (run_id << 16) | vertex_id
 
 
     def __repr__(self):
