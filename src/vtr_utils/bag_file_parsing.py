@@ -107,7 +107,6 @@ class Rosbag2GraphFactory(GraphFactory):
 
         edge_access = self.cache[self.edge_path]
         for _, edge_msg in edge_access.get_bag_msgs_iter("edges"):
-            print(edge_msg)
             try:
                 graph.add_edge(Edge(edge_msg))
             except Exception as e: # case of dangling edges

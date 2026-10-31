@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     v_start = test_graph.root
 
-    path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start))
+    # path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start))
 
     x = []
     y = []
@@ -94,9 +94,9 @@ if __name__ == '__main__':
         for v, e in repeat_iter:
             pose_vec = np.hstack((pose_vec, np.vstack((v.T_v_w.r_ba_ina(), so3op.rot2vec(v.T_w_v.C_ba()) * 180/np.pi))))
             t.append(v.stamp / 1e9)
-            dist.append(vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
-            path_len += np.linalg.norm(e.T.r_ba_ina())
-            p.append(path_len)
+            # dist.append(vtr_path.signed_distance_to_path(v.T_v_w.r_ba_ina(), path_matrix))
+            # path_len += np.linalg.norm(e.T.r_ba_ina())
+            # p.append(path_len)
         t = np.array(t)
         t_sort = np.argsort(t)
         t = t[t_sort]
@@ -116,6 +116,7 @@ if __name__ == '__main__':
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
         plt.legend()
+        plt.savefig('repeat.png')
 
         plt.figure(5)
         # plt.plot(p, pose_vec[3], label=f"Roll Run {i+1}")

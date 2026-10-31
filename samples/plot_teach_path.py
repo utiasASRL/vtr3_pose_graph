@@ -46,7 +46,6 @@ if __name__ == '__main__':
     factory = Rosbag2GraphFactory(offline_graph_dir)
 
     test_graph = factory.buildGraph()
-    pdb.set_trace()
     print(f"Graph {test_graph} has {test_graph.number_of_vertices} vertices and {test_graph.number_of_edges} edges")
     g_utils.set_world_frame(test_graph, test_graph.root)
 
@@ -62,44 +61,45 @@ if __name__ == '__main__':
     teach_count = 0
     count = 0
 
-    for v, e in BreadthFirstSearchIterator(v_start):
-        x.append(v.T_v_w.r_ba_ina()[0])
-        y.append(v.T_v_w.r_ba_ina()[1])
+    for v, e in PriviledgedIterator(v_start):
+        x.append(v.T_v_w.r_ba_ina()[0][0])
+        y.append(v.T_v_w.r_ba_ina()[1][0])
         t.append(v.stamp / 1e9)
         if e.mode == 1 and (e.from_id < e.to_id):
             teach_count += 1
         count += 1
-        print(v.id)
-        if e.mode == 0:
-            c_mode.append('green')
-        elif e.mode == 1:
-            c_mode.append('red')
-        else:
-            c_mode.append('gray')
+        print(path_len)
+        # if e.mode == 0: # AUTONOMOUS
+        #     c_mode.append('green')
+        # elif e.mode == 1: # MANUAL
+        #     c_mode.append('red')
+        # else: # UNKNOWN
+        #     c_mode.append('gray')
 
-        c.append((v.id >> 60) & 0xF) # color based on rid
+        # c.append((v.id >> 60) & 0xF) # color based on rid
         path_len += np.linalg.norm(e.T.r_ba_ina())
 
-    fig, ax = plt.subplots()
+    print('out of loop')
 
-    c_map = mcolors.ListedColormap(custom_colors)
+    # c_map = mcolors.ListedColormap(custom_colors)
     print(f"path length : {path_len}")
     print(f"num taught vertices : {teach_count}, num total vertices : {count}")    
-    sc = ax.scatter(x, y, label="Teach", c=c, edgecolors=c_mode, cmap=c_map, vmin=-0.5, vmax=15.5)
-    # ax.set_title()
-    id = os.getenv("ROBOT_ID")
-    print(id)
+    plt.scatter(x, y, label="Teach")
+    # sc = ax.scatter(x, y, label="Teach", c=c, edgecolors=c_mode, cmap=c_map, vmin=-0.5, vmax=15.5)
+    # id = os.getenv("ROBOT_ID")
     
-    ax.set_title(
-        f"vtr_pose_graph", 
-        fontsize=14, 
-        fontweight='bold', 
-        pad=15,
-        color=c_map(int(id))
-    )
-    cbar = plt.colorbar(sc, ticks=range(16))
+    # ax.set_title(
+    #     f"vtr_pose_graph", 
+    #     fontsize=14, 
+    #     fontweight='bold', 
+    #     pad=15,
+    #     # color=c_map(int(id))
+    # )
+    # cbar = plt.colorbar(sc, ticks=range(16))
     # plt.colorbar(label='Autonomous (0), Manual (1), Unknown (2)', ax=None)
-    cbar.set_label('Run ID (rid)')
+    # cbar.set_label('Run ID (rid)')
 
     plt.axis('equal')
-    plt.pause(3)
+    # plt.pause(4)
+    print('plotted')
+    plt.savefig(f'{args.graph}.png')

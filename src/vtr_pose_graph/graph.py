@@ -43,7 +43,6 @@ class Graph:
         if isinstance(vid, int):
             return vid
         elif isinstance(vid, tuple) and len(vid) == 2 and isinstance(vid[0], int):
-            print(f"{vid[0]}, {vid[1]}")
             return Vertex.compose_id(vid[0], vid[1])
         raise IndexError("Vertices must be a single unique integer or a tuple of two integers")
 

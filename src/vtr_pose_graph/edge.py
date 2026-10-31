@@ -25,7 +25,6 @@ class Edge:
             self.from_id = edge_msg.from_id
             self.to_id = edge_msg.to_id
             self.T = Transformation(xi_ab=np.array(edge_msg.t_to_from.xi).reshape(6, 1))
-            print(edge_msg.t_to_from.cov_set)
             if edge_msg.t_to_from.cov_set == True:
                 self.cov = np.array(edge_msg.t_to_from.cov).reshape(6,6)
             else:

@@ -144,7 +144,7 @@ if __name__ == '__main__':
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
         plt.colorbar(label="Lateral Error (m)")
-        plt.savefig(f'plots/curvature/virtr_rural_pte.png')
+        plt.show()
         plt.legend()
 
         fname = f"virtr_office"
