@@ -8,6 +8,8 @@ import vtr_regression_testing.path_comparison as vtr_path
 import argparse
 import pylgmath.so3.operations as so3op
 
+ROBOT_COLOURS = {0:"#3cb44b", 1:"#911eb4", 2:"#ffe119", 3:"#4363d8"}
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
@@ -32,17 +34,27 @@ if __name__ == '__main__':
 
     pose_vec = np.zeros((6, 0))
     t = []
+    ids = []
+
+    # Accumulated odometry: T_v_start for every visited vertex, composed edge by edge
+    T_v_start = {}
+    dist = []
+    path_len = 0.0
 
     for v, e in PriviledgedIterator(v_start):
         pose_vec = np.hstack((pose_vec, np.vstack((v.T_v_w.r_ba_ina(), so3op.rot2vec(v.T_w_v.C_ba()) * 180/np.pi))))
         t.append(v.stamp / 1e9)
+        ids.append(v.id >> 60)
+
+    c = np.array([ROBOT_COLOURS[id] for id in ids])
     t = np.array(t)
     t_sort = np.argsort(t)
     t = t[t_sort]
+    c = c[t_sort]
     pose_vec = pose_vec[:, t_sort]
 
     plt.figure(0)
-    plt.scatter(pose_vec[0], pose_vec[1], label="Teach", linewidth=5)
+    plt.scatter(pose_vec[0], pose_vec[1], label="Teach", linewidth=2, c=c)
     plt.axis('equal')
     plt.legend()
 
